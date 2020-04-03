@@ -43,25 +43,47 @@ CHIP ALU {
 
     PARTS:
     // zx
-    Mux16(a=x, b=0, sel=zx, out=outMux16x1);
+    Mux16(a=x, b[0]=false, sel=zx, out=outMux16x1);
+    // 以下でもいけるけど上の方が簡単だからOK
+    // Not16(in=x, out=outNotx);
+    // Inc16(in=outNotx, out=outInc16x);
+    // Add16(a=x, b=outInc16x, out=outZx);
+    // Mux16(a=x, b=outZx, sel=zx, out=outMux16x1);
+
     // nx
     Not16(in=outMux16x1, out=outNot16x1);
     Mux16(a=outMux16x1, b=outNot16x1, sel=nx, out=outMux16x2);
+
     // zy
-    Mux16(a=y, b=0, sel=zy, out=outMux16y1);
+    Mux16(a=y, b=false, sel=zy, out=outMux16y1);
+
     // ny
     Not16(in=outMux16y1, out=outNot16y1);
     Mux16(a=outMux16y1, b=outNot16y1, sel=ny, out=outMux16y2);
+
     // f
-    Add16(a=outMux16x2, b=outMux16y2, out=outAdd16a);
     And16(a=outMux16x2, b=outMux16y2, out=outAnd16a);
-    Mux16(a=outAdd16a, b=outAnd16a, sel=f, out=outMux16a);
+    Add16(a=outMux16x2, b=outMux16y2, out=outAdd16a);
+    Mux16(a=outAnd16a, b=outAdd16a, sel=f, out=outMux16a);
+
     // no
     Not16(in=outMux16a, out=outNot16a);
-    Mux16(a=outMux16a, b=outNot16a, sel=no, out=out);
+    // outをそのまま利用出来なかったので一旦もう一つ用意した
+    // Mux16(a=outMux16a, b=outNot16a, sel=no, out[0..7]=outLow, out[8..15]=outHigh);
+    Mux16(a=outMux16a, b=outNot16a, sel=no, out[0..7]=outLow, out[8..14]=outHigh, out[15]=sign);
+
     // zr
-    Or8Way(in=out[0..7], out=outOr8Way1);
-    Or8Way(in=out[8..15], out=outOr8Way2);
-    Or(a=outOr8Way1, b=outOr8Way2, out=zr);
+    Or8Way(in=outLow, out=outOr8Way1);
+    // Or8Way(in=outHigh, out=outOr8Way2);
+    Or8Way(in[0..6]=outHigh, in[7]=sign, out=outOr8Way2);
+    Or(a=outOr8Way1, b=outOr8Way2, out=outOr);
+    Not(in=outOr, out=zr);
+
     // ng
+    // Not16(in[0..7]=outLow, in[8..15]=outHigh, out[15]=sign);
+    And(a=sign, b=true, out=ng);
+
+    // out 
+    // Mux16(a[0..7]=outLow, a[8..15]=outHigh, b=true, sel=false, out=out);
+    Mux16(a[0..7]=outLow, a[8..14]=outHigh, a[15]=sign, b=true, sel=false, out=out);
 }
