@@ -11,4 +11,4 @@ https://www.nand2tetris.org/copy-of-nestedcall-1
 ### かかった時間
  - chapter1: 8h
  - chapter2: 3h
- - chapter3: 4h(4/5 17:30)
+ - chapter3: 4.5h(4/5 18:00)
