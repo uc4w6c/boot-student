@@ -12,3 +12,4 @@ https://www.nand2tetris.org/copy-of-nestedcall-1
  - chapter1: 8h
  - chapter2: 3h
  - chapter3: 4.5h(4/5 18:00)
+ - chapter4: 1h (4/6 23:30)
