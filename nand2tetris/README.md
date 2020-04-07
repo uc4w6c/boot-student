@@ -12,7 +12,8 @@ https://www.nand2tetris.org/copy-of-nestedcall-1
 ./tools/Assembler.sh 
 
 ### かかった時間
+    開始日: 2020/3/28
  - chapter1: 8h
  - chapter2: 3h
  - chapter3: 4.5h(4/5 18:00)
- - chapter4: 2.5h (4/7 21:00)
+ - chapter4: 3h (4/7 21:30)  // キーボード入力の問題を端折った
