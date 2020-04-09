@@ -17,4 +17,4 @@ https://www.nand2tetris.org/copy-of-nestedcall-1
  - chapter2: 3h
  - chapter3: 4.5h(4/5 18:00)
  - chapter4: 3h (4/7 21:30)  // キーボード入力の問題を端折った
- - chapter5: 2.5 (4/9 23:30) // CPUの作成方法を検討中
+ - chapter5: 3h (4/10 9:00) // CPUの作成方法を検討中
