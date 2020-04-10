@@ -53,12 +53,17 @@ CHIP CPU {
     And(a=isComp, b=instruction[6], out=noIn);
     // - dest
     And(a=isComp, b=instruction[5], out=loadA);
-    And(a=isComp, b=instruction[3], out=loadD);
+    And(a=isComp, b=instruction[4], out=loadD);
     And(a=isComp, b=instruction[3], out=writeM); // out writeM
+    // - jump
+    And(a=isComp, b=instruction[2], out=j1);
+    And(a=isComp, b=instruction[1], out=j2);
+    And(a=isComp, b=instruction[0], out=j3);
 
     // ARegister
     Mux16(a[0..14]=inM[0..14], b=outMemory, sel=loadA, out=registIn);
-    Register(in=registIn, load=isComp, out=outARegister, out[0..14]=addressM);
+    // Register(in=registIn, load=isComp, out=outARegister, out[0..14]=addressM);
+    Register(in=registIn, load=isComp, out=outARegister, out[0..14]=addressM, out[0..7]=outARegisterLow, out[8..15]=outARegisterHeigh, out[15]=outARegisterSign);
 
     // ALU
     Mux16(a=outARegister, b=inM, sel=isComp, out=ALUInY);
@@ -69,5 +74,25 @@ CHIP CPU {
     ALU(x=ALUInX, y=ALUInY, zx=zxIn , nx=nxIn, zy=zyIn, ny=nyIn, f=fIn, no=noIn , out=outM, out=outMemory); // out outM
 
     // PC
-    PC(in=outARegister, inc=true, load=isComp , reset=reset, out=pc); // out PC
+    // - out < 0 でjumpするか判断
+    // And(a=outARegister[15], b=true, out=isMinus);
+    And(a=outARegisterSign, b=true, out=isMinus);
+    And(a=isMinus, b=j1, out=isJump1);
+    // - out = 0でjumpするか判断
+    // Or8Way(in=outARegister[0..7], out=outOr8Way1);
+    // Or8Way(in=outARegister[8..15], out=outOr8Way2);
+    Or8Way(in=outARegisterLow, out=outOr8Way1);
+    Or8Way(in=outARegisterHeigh, out=outOr8Way2);
+    And(a=outOr8Way1, b=outOr8Way2, out=isZero);
+    And(a=isZero, b=j2, out=isJump2);
+    // - out > 0でjumpするか判断
+    Or(a=isMinus, b=isZero, out=isNotPlus);
+    Not(in=isNotPlus, out=isPlus);
+    And(a=isPlus, b=j3, out=isJump3);
+
+    Or(a=isJump1, b=isJump2, out=isJump4);
+    Or(a=isJump3, b=isJump4, out=isJump);
+    // TODO: 最終出力pcは15bitだが、PCだと16bitなので差分が生じる。これ何？？？
+    // PC(in=outARegister, inc=true, load=isJump, reset=reset, out=pc); // out PC
+    PC(in=outARegister, inc=true, load=isJump, reset=reset, out[1..15]=pc); // out PC
 }

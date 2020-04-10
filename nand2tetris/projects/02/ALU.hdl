@@ -73,6 +73,7 @@ CHIP ALU {
     Mux16(a=outMux16a, b=outNot16a, sel=no, out[0..7]=outLow, out[8..14]=outHigh, out[15]=sign);
 
     // zr
+    // TODO: これマイナスが考慮されていないような？
     Or8Way(in=outLow, out=outOr8Way1);
     // Or8Way(in=outHigh, out=outOr8Way2);
     Or8Way(in[0..6]=outHigh, in[7]=sign, out=outOr8Way2);
