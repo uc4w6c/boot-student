@@ -39,5 +39,35 @@ CHIP CPU {
         pc[15];          // address of next instruction
 
     PARTS:
-    // Put your code here:
+    // decode
+    // 16番目が操作命令で利用するものの前提 0かもだけど
+    Or(a=instruction[15], b=false, out=isComp);
+    // - compニーモックの判断(0=レジスタ, 1=メモリ)
+    And(a=isComp, b=instruction[12], out=compMnemonic);
+    // - ALU入力値
+    And(a=isComp, b=instruction[11], out=zxIn);
+    And(a=isComp, b=instruction[10], out=nxIn);
+    And(a=isComp, b=instruction[9], out=zyIn);
+    And(a=isComp, b=instruction[8], out=nyIn);
+    And(a=isComp, b=instruction[7], out=fIn);
+    And(a=isComp, b=instruction[6], out=noIn);
+    // - dest
+    And(a=isComp, b=instruction[5], out=loadA);
+    And(a=isComp, b=instruction[3], out=loadD);
+    And(a=isComp, b=instruction[3], out=writeM); // out writeM
+
+    // ARegister
+    Mux16(a[0..14]=inM[0..14], b=outMemory, sel=loadA, out=registIn);
+    Register(in=registIn, load=isComp, out=outARegister, out[0..14]=addressM);
+
+    // ALU
+    Mux16(a=outARegister, b=inM, sel=isComp, out=ALUInY);
+
+    Register(in=outMemory, load=isComp, out=ALUInX);
+
+    // MEMO: 最後outMeomoryを次のtに繋げる
+    ALU(x=ALUInX, y=ALUInY, zx=zxIn , nx=nxIn, zy=zyIn, ny=nyIn, f=fIn, no=noIn , out=outM, out=outMemory); // out outM
+
+    // PC
+    PC(in=outARegister, inc=true, load=isComp , reset=reset, out=pc); // out PC
 }
