@@ -61,16 +61,16 @@ CHIP CPU {
     And(a=isComp, b=instruction[0], out=j3);
 
     // ARegister
-    Mux16(a[0..14]=inM[0..14], b=outMemory, sel=loadA, out=registIn);
+    Mux16(a[0..14]=instruction[0..14], b=outMemory, sel=loadA, out=registIn);
     // Register(in=registIn, load=isComp, out=outARegister, out[0..14]=addressM);
-    Register(in=registIn, load=isComp, out=outARegister, out[0..14]=addressM, out[0..7]=outARegisterLow, out[8..15]=outARegisterHeigh, out[15]=outARegisterSign);
+    // ARegister(in=registIn, load=isComp, out=outARegister, out[0..14]=addressM, out[0..7]=outARegisterLow, out[8..15]=outARegisterHeigh, out[15]=outARegisterSign);
+    Not(in=isComp, out=isARegist);
+    ARegister(in=registIn, load=isARegist, out=outARegister, out[0..14]=addressM, out[0..7]=outARegisterLow, out[8..15]=outARegisterHeigh, out[15]=outARegisterSign);
 
     // ALU
     Mux16(a=outARegister, b=inM, sel=isComp, out=ALUInY);
 
-    Register(in=outMemory, load=isComp, out=ALUInX);
-
-    // MEMO: 最後outMeomoryを次のtに繋げる
+    DRegister(in=outMemory, load=isComp, out=ALUInX); // MEMO: 最後outMeomoryを次のtに繋げる
     ALU(x=ALUInX, y=ALUInY, zx=zxIn , nx=nxIn, zy=zyIn, ny=nyIn, f=fIn, no=noIn , out=outM, out=outMemory); // out outM
 
     // PC
@@ -94,5 +94,6 @@ CHIP CPU {
     Or(a=isJump3, b=isJump4, out=isJump);
     // TODO: 最終出力pcは15bitだが、PCだと16bitなので差分が生じる。これ何？？？
     // PC(in=outARegister, inc=true, load=isJump, reset=reset, out=pc); // out PC
-    PC(in=outARegister, inc=true, load=isJump, reset=reset, out[1..15]=pc); // out PC
+    // PC(in=outARegister, inc=true, load=isJump, reset=reset, out[1..15]=pc); // out PC
+    PC(in=outPC, inc=true, load=isJump, reset=reset, out[0..14]=pc, out=outPC); // out PC
 }
