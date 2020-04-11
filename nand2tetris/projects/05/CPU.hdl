@@ -53,7 +53,10 @@ CHIP CPU {
     And(a=isComp, b=instruction[6], out=noIn);
     // - dest
     And(a=isComp, b=instruction[5], out=loadA);
-    And(a=isComp, b=instruction[4], out=loadD);
+    And(a=isComp, b=instruction[4], out=tmpLoadD1);
+    // 以下一旦テスト
+    Not(in=isComp, out=tmpLoadD2);
+    Or(a=tmpLoadD1, b=tmpLoadD2, out=loadD);
     And(a=isComp, b=instruction[3], out=writeM); // out writeM
     // - jump
     And(a=isComp, b=instruction[2], out=j1);
@@ -70,8 +73,11 @@ CHIP CPU {
     // ALU
     Mux16(a=outARegister, b=inM, sel=isComp, out=ALUInY);
 
-    DRegister(in=outMemory, load=isComp, out=ALUInX); // MEMO: 最後outMeomoryを次のtに繋げる
+    // 順番変更する
+    // DRegister(in=outMemory, load=isComp, out=ALUInX); // MEMO: 最後outMeomoryを次のtに繋げる
     ALU(x=ALUInX, y=ALUInY, zx=zxIn , nx=nxIn, zy=zyIn, ny=nyIn, f=fIn, no=noIn , out=outM, out=outMemory); // out outM
+    Mux16(a[0..14]=instruction[0..14], b=outMemory, sel=isComp, out=inDRegister);
+    DRegister(in=inDRegister, load=loadD, out=ALUInX);
 
     // PC
     // - out < 0 でjumpするか判断
@@ -92,8 +98,9 @@ CHIP CPU {
 
     Or(a=isJump1, b=isJump2, out=isJump4);
     Or(a=isJump3, b=isJump4, out=isJump);
+    Mux16(a=false, b=outARegister, sel=isJump, out=InPC);
     // TODO: 最終出力pcは15bitだが、PCだと16bitなので差分が生じる。これ何？？？
     // PC(in=outARegister, inc=true, load=isJump, reset=reset, out=pc); // out PC
     // PC(in=outARegister, inc=true, load=isJump, reset=reset, out[1..15]=pc); // out PC
-    PC(in=outPC, inc=true, load=isJump, reset=reset, out[0..14]=pc, out=outPC); // out PC
+    PC(in=InPC, inc=true, load=isJump, reset=reset, out[0..14]=pc); // out PC
 }

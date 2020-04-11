@@ -17,4 +17,4 @@ https://www.nand2tetris.org/copy-of-nestedcall-1
  - chapter2: 3h
  - chapter3: 4.5h(4/5 18:00)
  - chapter4: 3h (4/7 21:30)  // キーボード入力の問題を端折った
- - chapter5: 5.5h (4/11 24:00) // PCは出来たはず。DRegisterに失敗している
+ - chapter5: 6h (4/11 24:00) // PCは出来たはず。DRegisterに失敗している
