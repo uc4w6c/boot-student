@@ -40,7 +40,6 @@ CHIP CPU {
 
     PARTS:
     // decode
-    // 16番目が操作命令で利用するものの前提 0かもだけど
     Or(a=instruction[15], b=false, out=isComp);
     // - compニーモックの判断(0=レジスタ, 1=メモリ)
     And(a=isComp, b=instruction[12], out=compMnemonic);
@@ -53,10 +52,7 @@ CHIP CPU {
     And(a=isComp, b=instruction[6], out=noIn);
     // - dest
     And(a=isComp, b=instruction[5], out=loadA);
-    And(a=isComp, b=instruction[4], out=tmpLoadD1);
-    // 以下一旦テスト
-    Not(in=isComp, out=tmpLoadD2);
-    Or(a=tmpLoadD1, b=tmpLoadD2, out=loadD);
+    And(a=isComp, b=instruction[4], out=loadD);
     And(a=isComp, b=instruction[3], out=writeM); // out writeM
     // - jump
     And(a=isComp, b=instruction[2], out=j1);
@@ -65,31 +61,28 @@ CHIP CPU {
 
     // ARegister
     Mux16(a[0..14]=instruction[0..14], b=outMemory, sel=loadA, out=registIn);
-    // Register(in=registIn, load=isComp, out=outARegister, out[0..14]=addressM);
-    // ARegister(in=registIn, load=isComp, out=outARegister, out[0..14]=addressM, out[0..7]=outARegisterLow, out[8..15]=outARegisterHeigh, out[15]=outARegisterSign);
-    Not(in=isComp, out=isARegist);
-    ARegister(in=registIn, load=isARegist, out=outARegister, out[0..14]=addressM, out[0..7]=outARegisterLow, out[8..15]=outARegisterHeigh, out[15]=outARegisterSign);
+    // - isCompが0の時は必ず登録、1の時はloadAが1の時登録
+    Not(in=isComp, out=tmpIsARegist1);
+    And(a=isComp, b=loadA, out=tmpIsARegist2);
+    Or(a=tmpIsARegist1, b=tmpIsARegist2, out=isARegist);
+    ARegister(in=registIn, load=isARegist, out=outARegister, out[0..14]=addressM, out[0..7]=outARegisterLow, out[8..15]=outARegisterHigh, out[15]=outARegisterSign); // out addressM
 
     // ALU
-    Mux16(a=outARegister, b=inM, sel=isComp, out=ALUInY);
+    Mux16(a=outARegister, b=inM, sel=compMnemonic, out=ALUInY);
 
-    // 順番変更する
-    // DRegister(in=outMemory, load=isComp, out=ALUInX); // MEMO: 最後outMeomoryを次のtに繋げる
-    ALU(x=ALUInX, y=ALUInY, zx=zxIn , nx=nxIn, zy=zyIn, ny=nyIn, f=fIn, no=noIn , out=outM, out=outMemory); // out outM
+    ALU(x=ALUInX, y=ALUInY, zx=zxIn , nx=nxIn, zy=zyIn, ny=nyIn, f=fIn, no=noIn , out=outM, out=outMemory, out[15]=outMemorySign, out[8..14]=outMemoryHigh, out[0..7]=outMemoryLow); // out outM
     Mux16(a[0..14]=instruction[0..14], b=outMemory, sel=isComp, out=inDRegister);
     DRegister(in=inDRegister, load=loadD, out=ALUInX);
 
     // PC
     // - out < 0 でjumpするか判断
-    // And(a=outARegister[15], b=true, out=isMinus);
-    And(a=outARegisterSign, b=true, out=isMinus);
+    And(a=outMemorySign, b=true, out=isMinus);
     And(a=isMinus, b=j1, out=isJump1);
     // - out = 0でjumpするか判断
-    // Or8Way(in=outARegister[0..7], out=outOr8Way1);
-    // Or8Way(in=outARegister[8..15], out=outOr8Way2);
-    Or8Way(in=outARegisterLow, out=outOr8Way1);
-    Or8Way(in=outARegisterHeigh, out=outOr8Way2);
-    And(a=outOr8Way1, b=outOr8Way2, out=isZero);
+    Or8Way(in=outMemoryLow, out=outOr8Way1);
+    Or8Way(in[0..6]=outMemoryHigh, out=outOr8Way2);
+    Or(a=outOr8Way1, b=outOr8Way2, out=isNotZero);
+    Not(in=isNotZero, out=isZero);
     And(a=isZero, b=j2, out=isJump2);
     // - out > 0でjumpするか判断
     Or(a=isMinus, b=isZero, out=isNotPlus);
@@ -98,9 +91,6 @@ CHIP CPU {
 
     Or(a=isJump1, b=isJump2, out=isJump4);
     Or(a=isJump3, b=isJump4, out=isJump);
-    Mux16(a=false, b=outARegister, sel=isJump, out=InPC);
-    // TODO: 最終出力pcは15bitだが、PCだと16bitなので差分が生じる。これ何？？？
-    // PC(in=outARegister, inc=true, load=isJump, reset=reset, out=pc); // out PC
-    // PC(in=outARegister, inc=true, load=isJump, reset=reset, out[1..15]=pc); // out PC
+    Mux16(a=false, b=outARegister, sel=true, out=InPC);
     PC(in=InPC, inc=true, load=isJump, reset=reset, out[0..14]=pc); // out PC
 }
