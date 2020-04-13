@@ -16,7 +16,9 @@ public class Parser {
         try (BufferedReader reader = Files.newBufferedReader(path)) {
             String line = null;
             while ((line = reader.readLine()) != null) {
-                asmList.add(line);
+                if (line.isEmpty()) continue;
+                if (line.trim().substring(2).equals("//")) continue;
+                asmList.add(line.trim());
             }
         } catch (IOException e) {
             throw new IllegalArgumentException(e);
@@ -38,6 +40,9 @@ public class Parser {
     }
 
     public CommandType commandType() {
+        var asm = this.asmList.get(this.point);
+        if (asm.indexOf(";") > 0) return CommandType.C_COMMAND;
+        if (asm.substring(0).equals("(")) return CommandType.L_COMMAND;
         return CommandType.A_COMMAND;
     }
 }
