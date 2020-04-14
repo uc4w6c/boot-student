@@ -5,9 +5,10 @@ import java.nio.file.Path;
 import java.util.List;
 
 public class Parser {
+    private final String COMMENT = "//";
     private List<String> asmList;
     private int point = 0;
-    private boolean isFirst = true;
+    // private boolean isFirst = true;
 
     Parser(Path path) {
         if (Files.isReadable(path)) {
@@ -17,7 +18,12 @@ public class Parser {
             String line = null;
             while ((line = reader.readLine()) != null) {
                 if (line.isEmpty()) continue;
-                if (line.trim().substring(0, 2).equals("//")) continue;
+                if (line.trim().substring(0, 2).equals(COMMENT)) continue;
+                // コメント除外
+                var slashPoint = line.indexOf(COMMENT);
+                if (slashPoint > 0) {
+                    line = line.substring(0, slashPoint);
+                }
                 asmList.add(line.trim());
             }
         } catch (IOException e) {
@@ -30,10 +36,12 @@ public class Parser {
     }
 
     public void advance() {
+        /*
         if (this.isFirst) {
             this.isFirst = false;
             return;
         }
+         */
         if (this.point < this.asmList.size()) {
             this.point++;
         }
@@ -59,21 +67,73 @@ public class Parser {
     }
 
     public String dest() {
-        // TODO: 実装すること
-        // this.asmList.get(this.point);
-        return null;
+        if (!this.symbol().equals(CommandType.C_COMMAND)) {
+            return null;
+        }
+        var asm = this.asmList.get(this.point);
+        var neemockPoint = asm.indexOf("=");
+        if (neemockPoint < 0) {
+            return null;
+        }
+        return asm.substring(0, neemockPoint + 1);
     }
 
     public String comp() {
-
+        if (!this.symbol().equals(CommandType.C_COMMAND)) {
+            return null;
+        }
+        var asm = this.asmList.get(this.point);
+        var neemockPoint = asm.indexOf("=");
+        if (neemockPoint < 0) {
+            return null;
+        }
+        return asm.substring(neemockPoint + 1);
+        /*
+        var compNeemock = asm.substring(neemockPoint + 1);
+        switch (compNeemock) {
+            case "0":   return "1101010";
+            case "1":   return "1111111";
+            case "-1":  return "111010";
+            case "D":   return "1001100";
+            case "A":   return "1110000";
+            case "!D":  return "1001111";
+            case "!A":  return "1110011";
+            case "D+1": return "1011111";
+            case "A+1": return "1110111";
+            case "D-1": return "1001110";
+            case "A-1": return "1110010";
+            case "D+A": return "1000010";
+            case "D-A": return "1110010";
+            case "A-D": return "1000111";
+            case "D&A": return "1000000";
+            case "D|A": return "1010101";
+            case "M":   return "0110000";
+            case "!M":  return "0110001";
+            case "-M":  return "0110011";
+            case "M+1": return "0110111";
+            case "M-1": return "0110010";
+            case "D+M": return "0000010";
+            case "D-M": return "0010011";
+            case "M-D": return "0000111";
+            case "D&M": return "0000000";
+            case "D|M": return "0010101";
+        }
+        // ここには遷移しないが、Exception返却した方がいいかも
+        return null;
+         */
     }
 
     public String jump() {
+        if (!this.symbol().equals(CommandType.C_COMMAND)) {
+            return null;
+        }
         var asm = this.asmList.get(this.point);
         var neemockPoint = asm.indexOf(";");
         if (neemockPoint < 0) {
             return null;
         }
+        return asm.substring(neemockPoint + 1);
+        /*
         var jumpNeemock = asm.substring(neemockPoint + 1);
 
         switch(jumpNeemock) {
@@ -86,7 +146,8 @@ public class Parser {
             case "JMP": return "110";
             default:
         }
-        // ここには遷移しない
+        // ここには遷移しないが、Exception返却した方がいいかも
         return null;
+         */
     }
 }
