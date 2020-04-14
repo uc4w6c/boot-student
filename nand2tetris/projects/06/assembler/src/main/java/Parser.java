@@ -2,16 +2,17 @@ import java.io.BufferedReader;
 import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
+import java.util.ArrayList;
 import java.util.List;
 
 public class Parser {
     private final String COMMENT = "//";
-    private List<String> asmList;
+    private List<String> asmList = new ArrayList<String>();
     private int point = 0;
     // private boolean isFirst = true;
 
     Parser(Path path) {
-        if (Files.isReadable(path)) {
+        if (!Files.isReadable(path)) {
             throw new IllegalArgumentException("指定したファイルは読み取り不可です");
         }
         try (BufferedReader reader = Files.newBufferedReader(path)) {
@@ -24,7 +25,7 @@ public class Parser {
                 if (slashPoint > 0) {
                     line = line.substring(0, slashPoint);
                 }
-                asmList.add(line.trim());
+                this.asmList.add(line.trim());
             }
         } catch (IOException e) {
             throw new IllegalArgumentException(e);
@@ -67,7 +68,7 @@ public class Parser {
     }
 
     public String dest() {
-        if (!this.symbol().equals(CommandType.C_COMMAND)) {
+        if (!this.commandType().equals(CommandType.C_COMMAND)) {
             return null;
         }
         var asm = this.asmList.get(this.point);
@@ -79,7 +80,7 @@ public class Parser {
     }
 
     public String comp() {
-        if (!this.symbol().equals(CommandType.C_COMMAND)) {
+        if (!this.commandType().equals(CommandType.C_COMMAND)) {
             return null;
         }
         var asm = this.asmList.get(this.point);
@@ -124,7 +125,7 @@ public class Parser {
     }
 
     public String jump() {
-        if (!this.symbol().equals(CommandType.C_COMMAND)) {
+        if (!this.commandType().equals(CommandType.C_COMMAND)) {
             return null;
         }
         var asm = this.asmList.get(this.point);

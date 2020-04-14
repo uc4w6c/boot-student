@@ -30,15 +30,19 @@ public class Main {
         var code = new Code();
         while (parser.hasMoreCommands()) {
             if (parser.commandType().equals(CommandType.A_COMMAND)) {
-                writeByteList.add(
-                        Integer.toBinaryString(
-                                Integer.parseInt(parser.symbol())));
+                var binaryNum = Integer.toBinaryString(Integer.parseInt(parser.symbol()));
+                writeByteList.add("0" +
+                                    String.format("%15s", binaryNum)
+                                            .replace(" ", "0"));
             }
             if (parser.commandType().equals(CommandType.C_COMMAND)) {
-                var binary = code.dest(parser.dest());
-                binary += code.comp(parser.comp());
-                binary += code.jump(parser.jump());
-                writeByteList.add(binary);
+                var binary = "111";
+                binary += (parser.dest() == null) ? "000" : code.dest(parser.dest());
+                binary += (parser.comp() == null) ? "000" : code.comp(parser.comp());
+                binary += (parser.jump() == null) ? "000" : code.jump(parser.jump());
+                if (binary.isEmpty()) {
+                    writeByteList.add(binary);
+                }
             }
             parser.advance();
         }
@@ -47,12 +51,13 @@ public class Main {
             throw new IllegalArgumentException("出力データはありません。");
         }
 
-        var writePath = Paths.get(fileName.replace(".asam", ".hack"));
+        var writePath = Paths.get(fileName.replace(".asm", ".hack"));
         try {
+            System.out.println("path:" + writePath.toAbsolutePath());
             Files.write(writePath,
                         writeByteList,
                         Charset.forName("UTF-8"),
-                        StandardOpenOption.WRITE);
+                        StandardOpenOption.CREATE);
 
         } catch (IOException e) {
             e.printStackTrace();
