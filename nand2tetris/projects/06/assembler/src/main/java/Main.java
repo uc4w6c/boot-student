@@ -37,12 +37,17 @@ public class Main {
             }
             if (parser.commandType().equals(CommandType.C_COMMAND)) {
                 var binary = "111";
-                binary += (parser.dest() == null) ? "000" : code.dest(parser.dest());
+                /*
+                System.out.println("row:" + parser.dest() + ", " + parser.comp() + ", " + parser.jump());
+                System.out.println("row:"
+                                    + ((parser.dest() == null) ? "000" : code.dest(parser.dest())) + ", "
+                                    + ((parser.comp() == null) ? "000" : code.comp(parser.comp())) + ", "
+                                    + ((parser.jump() == null) ? "000" : code.jump(parser.jump())));
+                 */
                 binary += (parser.comp() == null) ? "000" : code.comp(parser.comp());
+                binary += (parser.dest() == null) ? "000" : code.dest(parser.dest());
                 binary += (parser.jump() == null) ? "000" : code.jump(parser.jump());
-                if (binary.isEmpty()) {
-                    writeByteList.add(binary);
-                }
+                writeByteList.add(binary);
             }
             parser.advance();
         }

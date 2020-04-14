@@ -73,10 +73,11 @@ public class Parser {
         }
         var asm = this.asmList.get(this.point);
         var neemockPoint = asm.indexOf("=");
+        // 先頭が = で始まる想定はない
         if (neemockPoint < 0) {
             return null;
         }
-        return asm.substring(0, neemockPoint + 1);
+        return asm.substring(0, neemockPoint);
     }
 
     public String comp() {
@@ -84,11 +85,16 @@ public class Parser {
             return null;
         }
         var asm = this.asmList.get(this.point);
-        var neemockPoint = asm.indexOf("=");
-        if (neemockPoint < 0) {
-            return null;
+        var eqNeemockPoint = asm.indexOf("=");
+        if (eqNeemockPoint > 0) {
+            return asm.substring(eqNeemockPoint + 1);
         }
-        return asm.substring(neemockPoint + 1);
+        var semicolonNeemockPoint = asm.indexOf(";");
+        if (semicolonNeemockPoint > 0) {
+            return asm.substring(0, semicolonNeemockPoint);
+        }
+        return null;
+
         /*
         var compNeemock = asm.substring(neemockPoint + 1);
         switch (compNeemock) {

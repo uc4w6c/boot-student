@@ -18,4 +18,4 @@ https://www.nand2tetris.org/copy-of-nestedcall-1
  - chapter3: 4.5h(4/5 18:00)
  - chapter4: 3h (4/7 21:30)  // キーボード入力の問題を端折った
  - chapter5: 8h (4/12 16:30)
- - chapter6: 4.5h (4/13 22:45) // シンボルなし前提で作成したプログラムのテスト中
+ - chapter6: 5h (4/14 9:00) // シンボルなし前提で作成したプログラム成功
