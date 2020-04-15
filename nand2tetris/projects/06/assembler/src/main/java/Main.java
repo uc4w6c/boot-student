@@ -8,7 +8,9 @@ import java.nio.file.Paths;
 import java.nio.file.StandardOpenOption;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.function.Predicate;
 
+// なんか全体的にコードが汚いな・・・
 public class Main {
     public static void main(String... args) {
         if (args.length != 1) {
@@ -26,16 +28,58 @@ public class Main {
                                                 "FileName:" + fileName);
         }
 
+        // シンボルテーブルの作成
+        var symbolTable = new SymbolTable();
+        Integer symbolNo = 0;
+        while (parser.hasMoreCommands()) {
+            if (parser.commandType().equals(CommandType.L_COMMAND)) {
+                // System.out.println("L Symbol:" + parser.symbol());
+                symbolTable.addEntry(parser.symbol(), symbolNo);
+
+            } else if (parser.commandType().equals(CommandType.A_COMMAND) ||
+                parser.commandType().equals(CommandType.C_COMMAND)) {
+
+                symbolNo++;
+            }
+            parser.advance();
+        }
+        parser.moveFirst();
+
+        // String型が数値かチェック
+        Predicate<String> isDigit = (symbol) -> {
+            try {
+                Integer.parseInt(symbol);
+                return true;
+            } catch (NumberFormatException nfex) {
+                return false;
+            }
+        };
+
+        // くそコードだな・・・。
+        symbolNo = 16; // 変数は16以降に格納
         var writeByteList = new ArrayList<String>();
         var code = new Code();
         while (parser.hasMoreCommands()) {
             if (parser.commandType().equals(CommandType.A_COMMAND)) {
-                var binaryNum = Integer.toBinaryString(Integer.parseInt(parser.symbol()));
+                var symbol = parser.symbol();
+                var binaryNum = 0;
+                if (isDigit.test(symbol)) {
+                    binaryNum = Integer.parseInt(parser.symbol());
+                } else {
+                    // System.out.println("A Symbol:" + symbol);
+                    if (symbolTable.contains(symbol)) {
+                        binaryNum = symbolTable.getAddress(symbol);
+                    } else {
+                        symbolTable.addEntry(symbol, symbolNo);
+                        binaryNum = symbolNo;
+                        symbolNo++;
+                    }
+                }
                 writeByteList.add("0" +
-                                    String.format("%15s", binaryNum)
+                                    String.format("%15s", Integer.toBinaryString(binaryNum))
                                             .replace(" ", "0"));
-            }
-            if (parser.commandType().equals(CommandType.C_COMMAND)) {
+
+            } else  if (parser.commandType().equals(CommandType.C_COMMAND)) {
                 var binary = "111";
                 /*
                 System.out.println("row:" + parser.dest() + ", " + parser.comp() + ", " + parser.jump());
@@ -48,7 +92,10 @@ public class Main {
                 binary += (parser.dest() == null) ? "000" : code.dest(parser.dest());
                 binary += (parser.jump() == null) ? "000" : code.jump(parser.jump());
                 writeByteList.add(binary);
+
             }
+            // 以下は何もしない
+            // else if (parser.commandType().equals(CommandType.L_COMMAND)) { }
             parser.advance();
         }
 

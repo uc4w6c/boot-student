@@ -7,7 +7,7 @@ import java.util.List;
 
 public class Parser {
     private final String COMMENT = "//";
-    private List<String> asmList = new ArrayList<String>();
+    private List<String> asmList = new ArrayList<>();
     private int point = 0;
     // private boolean isFirst = true;
 
@@ -48,6 +48,10 @@ public class Parser {
         }
     }
 
+    public void moveFirst() {
+        this.point = 0;
+    }
+
     public CommandType commandType() {
         var asm = this.asmList.get(this.point);
         if (asm.substring(0, 1).equals("@")) return CommandType.A_COMMAND;
@@ -61,8 +65,8 @@ public class Parser {
         }
         if (this.commandType().equals(CommandType.L_COMMAND)) {
             return this.asmList.get(this.point)
-                                .replace("", "(")
-                                .replace("", ")");
+                                .replace("(", "")
+                                .replace(")", "");
         }
         return null;
     }

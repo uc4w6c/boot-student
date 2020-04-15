@@ -11,6 +11,11 @@ https://www.nand2tetris.org/copy-of-nestedcall-1
 #### アセンブラシミュレータ (4章)
 ./tools/Assembler.sh 
 
+#### 作成したJavaアセンブラの使い方
+$ pwd
+/Users/ysaito/dev/app/workspace/boot-student/nand2tetris/projects/06/pong
+$ java -jar ../assembler/build/libs/assembler.jar PongL.asm 
+
 ### かかった時間
     開始日: 2020/3/28
  - chapter1: 8h
@@ -18,4 +23,4 @@ https://www.nand2tetris.org/copy-of-nestedcall-1
  - chapter3: 4.5h(4/5 18:00)
  - chapter4: 3h (4/7 21:30)  // キーボード入力の問題を端折った
  - chapter5: 8h (4/12 16:30)
- - chapter6: 5h (4/14 9:00) // シンボルなし前提で作成したプログラム成功
+ - chapter6: 6.5h (4/14 21:30)
