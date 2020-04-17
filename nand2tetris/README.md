@@ -24,4 +24,4 @@ $ java -jar ../assembler/build/libs/assembler.jar PongL.asm
  - chapter4: 3h (4/7 21:30)  // キーボード入力の問題を端折った
  - chapter5: 8h (4/12 16:30)
  - chapter6: 6.5h (4/14 21:30)
- - chapter7: 1.5h (4/15 22:00)
+ - chapter7: 2h (4/16 22:30)
