@@ -31,11 +31,41 @@ public class CodeWriter {
 
     // TODO: 一旦適当に作成するため、codeはここで変換
     public void writeArithmetic(String code) {
-        this.writeAsmList.add("@" + this.stackPop());
-        this.writeAsmList.add("D=M");
-        this.writeAsmList.add("@" + this.stackPop());
         if (code.equals("add")) {
+            this.writeAsmList.add("@" + (this.stackNo - 1));
+            this.writeAsmList.add("D=M");
+            this.writeAsmList.add("@" + (this.stackNo - 2));
             this.writeAsmList.add("D=D+M");
+        } else if (code.equals("sub")) {
+            this.writeAsmList.add("@" + (this.stackNo - 1));
+            this.writeAsmList.add("D=M");
+            this.writeAsmList.add("@" + (this.stackNo - 2));
+            this.writeAsmList.add("D=D-M");
+        } else if (code.equals("neg")) {
+            this.writeAsmList.add("@" + (this.stackNo - 1));
+            this.writeAsmList.add("D=-M");
+        } else if (code.equals("eq") ||
+                   code.equals("gt") ||
+                   code.equals("lt")) {
+
+            this.writeAsmList.add("@" + (this.stackNo - 1));
+            this.writeAsmList.add("D=M");
+            this.writeAsmList.add("@" + (this.stackNo - 2));
+            this.writeAsmList.add("D=D-M");
+        } else if (code.equals("and")) {
+            this.writeAsmList.add("@" + (this.stackNo - 1));
+            this.writeAsmList.add("D=M");
+            this.writeAsmList.add("@" + (this.stackNo - 2));
+            this.writeAsmList.add("D=D&M");
+        } else if (code.equals("or")) {
+            this.writeAsmList.add("@" + (this.stackNo - 1));
+            this.writeAsmList.add("D=M");
+            this.writeAsmList.add("@" + (this.stackNo - 2));
+            this.writeAsmList.add("D=D|M");
+        }
+        if (code.equals("not")) {
+            this.writeAsmList.add("@" + (this.stackNo - 1));
+            this.writeAsmList.add("D=!M");
         }
     }
 
@@ -76,6 +106,8 @@ public class CodeWriter {
             // this.writeAsmList.add("D=A");
         } else if (commandType.equals(CommandType.C_POP)) {
             // this.writeAsmList.add("M=" + Integer.toString(index));
+            // TODO: popは一旦適当に置いている
+            this.stackPop();
             this.writeAsmList.add("D=M");
         }
     }

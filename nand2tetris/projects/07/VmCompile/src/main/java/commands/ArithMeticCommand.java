@@ -49,13 +49,16 @@ public class ArithMeticCommand extends AbstractCommand {
 
     public String getHack(String code) {
         if (code.equals("add")) {
-            return "D=D+A";
+            // return "D=D+A";
+            return "D=D+M";
         }
         if (code.equals("sub")) {
-            return "D=D-A";
+            // return "D=D-A";
+            return "D=D-M";
         }
         if (code.equals("neg")) {
-            return "D=-D";
+            // return "D=-D";
+            return "D=-M";
         }
 
         // MEMO: ここから下はあっているかわからない。8章での確認内容と思う
