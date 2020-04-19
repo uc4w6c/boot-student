@@ -1,3 +1,7 @@
+import commands.ArithMeticCommand;
+import commands.Command;
+import commands.CommandType;
+
 import java.io.BufferedReader;
 import java.io.IOException;
 import java.nio.file.Files;
@@ -7,9 +11,9 @@ import java.util.List;
 
 public class Parser {
     private final String COMMENT = "//";
-    private List<String> asmList = new ArrayList<>();
+    private List<String> codeList = new ArrayList<>();
     private int point = 0;
-    // private boolean isFirst = true;
+    private Command command = ArithMeticCommand.getInstance();
 
     Parser(Path path) {
         if (!Files.isReadable(path)) {
@@ -25,11 +29,55 @@ public class Parser {
                 if (slashPoint > 0) {
                     line = line.substring(0, slashPoint);
                 }
-                this.asmList.add(line.trim());
+                this.codeList.add(line.trim());
             }
+            this.setCommand();
         } catch (IOException e) {
             throw new IllegalArgumentException(e);
         }
     }
 
+    public boolean hasMoreCommands() {
+        return (this.point < this.codeList.size());
+    }
+
+    public void advance() {
+        if (this.point < this.codeList.size()) {
+            this.point++;
+            this.setCommand();
+        }
+    }
+
+    private void setCommand() {
+        if (this.hasMoreCommands()) {
+            var code = this.codeList.get(this.point);
+            this.command = ArithMeticCommand.getInstance().doCheck(code);
+        }
+    }
+
+    public void moveFirst() {
+        this.point = 0;
+        this.setCommand();
+    }
+
+    public String getCode() {
+        if (this.hasMoreCommands()) {
+            return this.codeList.get(this.point);
+        }
+        return null;
+    }
+
+    public CommandType commandType() {
+        return this.command.getType();
+    }
+
+    public String arg1() {
+        var code = this.codeList.get(this.point);
+        return this.command.getArg1(code);
+    }
+
+    public String arg2() {
+        var code = this.codeList.get(this.point);
+        return this.command.getArg2(code);
+    }
 }
