@@ -35,15 +35,19 @@ public class CodeWriter {
             this.writeAsmList.add("@" + (this.stackNo - 1));
             this.writeAsmList.add("D=M");
             this.writeAsmList.add("@" + (this.stackNo - 2));
-            this.writeAsmList.add("D=D+M");
+            this.writeAsmList.add("M=D+M");
+            this.writeAsmList.add("@" + this.stackPop());
+            this.writeAsmList.add("M=0");
         } else if (code.equals("sub")) {
             this.writeAsmList.add("@" + (this.stackNo - 1));
             this.writeAsmList.add("D=M");
             this.writeAsmList.add("@" + (this.stackNo - 2));
-            this.writeAsmList.add("D=D-M");
+            this.writeAsmList.add("M=D-M");
+            this.writeAsmList.add("@" + this.stackPop());
+            this.writeAsmList.add("M=0");
         } else if (code.equals("neg")) {
             this.writeAsmList.add("@" + (this.stackNo - 1));
-            this.writeAsmList.add("D=-M");
+            this.writeAsmList.add("M=-M");
         } else if (code.equals("eq") ||
                    code.equals("gt") ||
                    code.equals("lt")) {
@@ -51,21 +55,27 @@ public class CodeWriter {
             this.writeAsmList.add("@" + (this.stackNo - 1));
             this.writeAsmList.add("D=M");
             this.writeAsmList.add("@" + (this.stackNo - 2));
-            this.writeAsmList.add("D=D-M");
+            this.writeAsmList.add("M=D-M");
+            this.writeAsmList.add("@" + this.stackPop());
+            this.writeAsmList.add("M=0");
         } else if (code.equals("and")) {
             this.writeAsmList.add("@" + (this.stackNo - 1));
             this.writeAsmList.add("D=M");
             this.writeAsmList.add("@" + (this.stackNo - 2));
-            this.writeAsmList.add("D=D&M");
+            this.writeAsmList.add("M=D&M");
+            this.writeAsmList.add("@" + this.stackPop());
+            this.writeAsmList.add("M=0");
         } else if (code.equals("or")) {
             this.writeAsmList.add("@" + (this.stackNo - 1));
             this.writeAsmList.add("D=M");
             this.writeAsmList.add("@" + (this.stackNo - 2));
-            this.writeAsmList.add("D=D|M");
+            this.writeAsmList.add("M=D|M");
+            this.writeAsmList.add("@" + this.stackPop());
+            this.writeAsmList.add("M=0");
         }
         if (code.equals("not")) {
             this.writeAsmList.add("@" + (this.stackNo - 1));
-            this.writeAsmList.add("D=!M");
+            this.writeAsmList.add("M=!M");
         }
     }
 
