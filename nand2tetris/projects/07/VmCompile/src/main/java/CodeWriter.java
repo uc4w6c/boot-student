@@ -190,44 +190,83 @@ public class CodeWriter {
 
     // TODO: 一旦適当に作成するため、codeはここで変換
     public void writePushPop(CommandType commandType, String segment, int index) {
-        switch(segment) {
-            case "local":
-                this.writeAsmList.add("@LCL");
-                break;
-            case "argument":
-                this.writeAsmList.add("@ARG");
-                break;
-            case "this":
-                this.writeAsmList.add("@THIS");
-                break;
-            case "pointer":
-                this.writeAsmList.add("@THIS+" + Integer.toString(index));
-                break;
-            case "temp":
-                this.writeAsmList.add("@THAT+" + Integer.toString(index));
-                break;
-            case "constant":
-                this.writeAsmList.add("@" +  Integer.toString(index));
-                this.writeAsmList.add("D=A");
-                this.writeAsmList.add("@" + this.stackPush());
-                this.writeAsmList.add("M=D");
-                break;
-            case "static":
-                this.writeAsmList.add("@THAT");
-                break;
-            default:
-                break;
-        }
         if (commandType.equals(CommandType.C_PUSH)) {
             // this.writeAsmList.add("D=M");
             // this.writeAsmList.add("M=" + Integer.toString(index));
             // this.writeAsmList.add("D=A");
             // this.writeAsmList.add("D=A");
+            switch(segment) {
+                case "local":
+                    this.writeAsmList.add("@LCL");
+                    this.writeAsmList.add("D=M");
+                    break;
+                case "argument":
+                    this.writeAsmList.add("@ARG");
+                    this.writeAsmList.add("D=M");
+                    break;
+                case "this":
+                    this.writeAsmList.add("@THIS");
+                    this.writeAsmList.add("D=M");
+                    break;
+                case "pointer":
+                    this.writeAsmList.add("@THIS+" + Integer.toString(index));
+                    this.writeAsmList.add("D=M");
+                    break;
+                case "temp":
+                    this.writeAsmList.add("@THAT+" + Integer.toString(index));
+                    this.writeAsmList.add("D=M");
+                    break;
+                case "constant":
+                    this.writeAsmList.add("@" +  Integer.toString(index));
+                    this.writeAsmList.add("D=A");
+                    break;
+                case "static":
+                    this.writeAsmList.add("@THAT");
+                    this.writeAsmList.add("D=M");
+                    break;
+                default:
+                    break;
+            }
+            this.writeAsmList.add("@" + this.stackPush());
+            this.writeAsmList.add("M=D");
         } else if (commandType.equals(CommandType.C_POP)) {
-            // this.writeAsmList.add("M=" + Integer.toString(index));
-            // TODO: popは一旦適当に置いている
-            this.stackPop();
+            this.writeAsmList.add("@" + (this.stackNo - 1));
             this.writeAsmList.add("D=M");
+
+            switch(segment) {
+                case "local":
+                    this.writeAsmList.add("@LCL");
+                    this.writeAsmList.add("M=D");
+                    break;
+                case "argument":
+                    this.writeAsmList.add("@ARG");
+                    this.writeAsmList.add("M=D");
+                    break;
+                case "this":
+                    this.writeAsmList.add("@THIS");
+                    this.writeAsmList.add("M=D");
+                    break;
+                case "pointer":
+                    this.writeAsmList.add("@THIS+" + Integer.toString(index));
+                    this.writeAsmList.add("M=D");
+                    break;
+                case "temp":
+                    this.writeAsmList.add("@THAT+" + Integer.toString(index));
+                    this.writeAsmList.add("M=D");
+                    break;
+                case "constant":
+                    // ここには遷移しないはず
+                    break;
+                case "static":
+                    this.writeAsmList.add("@THAT");
+                    this.writeAsmList.add("M=D");
+                    break;
+                default:
+                    break;
+            }
+
+            this.writeAsmList.add("@" + this.stackPop());
+            this.writeAsmList.add("M=0");
         }
     }
 

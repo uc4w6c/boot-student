@@ -17,7 +17,7 @@ public class PopCommand extends AbstractCommand {
     }
 
     public CommandType getType() {
-        return CommandType.C_PUSH;
+        return CommandType.C_POP;
     }
 
     public String getHack(String code) {
