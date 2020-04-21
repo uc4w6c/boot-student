@@ -201,7 +201,7 @@ public class CodeWriter {
                     this.writeAsmList.add("D=M");
                     break;
                 case "argument":
-                    this.writeAsmList.add("@ARG");
+                    this.writeAsmList.add("@ARG" + Integer.toString(index));
                     this.writeAsmList.add("D=M");
                     break;
                 case "this":
@@ -209,11 +209,11 @@ public class CodeWriter {
                     this.writeAsmList.add("D=M");
                     break;
                 case "pointer":
-                    this.writeAsmList.add("@THIS+" + Integer.toString(index));
+                    this.writeAsmList.add("@THIS" + Integer.toString(index));
                     this.writeAsmList.add("D=M");
                     break;
                 case "temp":
-                    this.writeAsmList.add("@THAT+" + Integer.toString(index));
+                    this.writeAsmList.add("@THAT" + Integer.toString(index));
                     this.writeAsmList.add("D=M");
                     break;
                 case "constant":
@@ -239,7 +239,14 @@ public class CodeWriter {
                     this.writeAsmList.add("M=D");
                     break;
                 case "argument":
+                    // this.writeAsmList.add("@ARG");
+                    // this.writeAsmList.add("M=D");
                     this.writeAsmList.add("@ARG");
+                    this.writeAsmList.add("A=M");
+                    // TODO: ここであっているかは怪しい
+                    for (int i = 0; i < index; i++) {
+                        this.writeAsmList.add("A=A+1");
+                    }
                     this.writeAsmList.add("M=D");
                     break;
                 case "this":

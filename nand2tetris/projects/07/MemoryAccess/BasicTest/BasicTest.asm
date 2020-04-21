@@ -19,12 +19,17 @@ M=D
 @257
 D=M
 @ARG
+A=M
+A=A+1
+A=A+1
 M=D
 @257
 M=0
 @256
 D=M
 @ARG
+A=M
+A=A+1
 M=D
 @256
 M=0
@@ -76,7 +81,7 @@ D=M
 M=D+M
 @257
 M=0
-@ARG
+@ARG1
 D=M
 @257
 M=D
@@ -106,7 +111,7 @@ D=M
 M=M-D
 @257
 M=0
-@THAT+6
+@THAT6
 D=M
 @257
 M=D

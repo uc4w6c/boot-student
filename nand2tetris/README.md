@@ -30,4 +30,4 @@ $ java -jar ../assembler/build/libs/assembler.jar PongL.asm
  - chapter4: 3h (4/7 21:30)  // キーボード入力の問題を端折った
  - chapter5: 8h (4/12 16:30)
  - chapter6: 6.5h (4/14 21:30)
- - chapter7: 8h (4/20 9:00) // BasicTest 作成中
+ - chapter7: 8.5h (4/21 24:30) // BasicTest 作成中 -> ARGは出来た。Aの位置を変えればいけた
