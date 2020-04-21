@@ -38,21 +38,30 @@ public class CodeWriter {
             this.writeAsmList.add("M=D+M");
             this.writeAsmList.add("@" + this.stackPop());
             this.writeAsmList.add("M=0");
+
         } else if (code.equals("sub")) {
             this.writeAsmList.add("@" + (this.stackNo - 1));
             this.writeAsmList.add("D=M");
             this.writeAsmList.add("@" + (this.stackNo - 2));
-            this.writeAsmList.add("M=D-M");
+            this.writeAsmList.add("M=M-D");
             this.writeAsmList.add("@" + this.stackPop());
             this.writeAsmList.add("M=0");
+
         } else if (code.equals("neg")) {
             this.writeAsmList.add("@" + (this.stackNo - 1));
             this.writeAsmList.add("M=-M");
+            /*
+            this.writeAsmList.add("D=-M");
+            this.writeAsmList.add("@" + (this.stackNo - 1));
+            this.writeAsmList.add("M=D");
+            */
+
         } else if (code.equals("eq")) {
 
             // MEMO: 一旦作ったけど、もっといい方法がありそう
             this.writeAsmList.add("@" + (this.stackNo - 1));
             this.writeAsmList.add("D=M");
+            /*
             this.writeAsmList.add("@" + (this.stackNo - 2));
             this.writeAsmList.add("M=D-M");
             this.writeAsmList.add("@" + this.stackPop());
@@ -60,26 +69,35 @@ public class CodeWriter {
 
             this.writeAsmList.add("@" + (this.stackNo - 1));
             this.writeAsmList.add("D=M");
-            this.writeAsmList.add("@EQ_FALSE" + (this.stackNo - 1));
-            this.writeAsmList.add("D;JNE");
+             */
+            this.writeAsmList.add("@" + (this.stackNo - 2));
+            this.writeAsmList.add("D=D-M");
+            this.writeAsmList.add("@EQ_TRUE" + (this.stackNo - 2));
+            this.writeAsmList.add("D;JEQ");
 
-            this.writeAsmList.add("(EQ_TRUE" + (this.stackNo - 1) + ")");
-            this.writeAsmList.add("@" + (this.stackNo - 1));
-            this.writeAsmList.add("M=1");
-            this.writeAsmList.add("@EQ_END" + (this.stackNo - 1));
-            this.writeAsmList.add("D;JMP");
-
-            this.writeAsmList.add("(EQ_FALSE" + (this.stackNo - 1) + ")");
-            this.writeAsmList.add("@" + (this.stackNo - 1));
+            this.writeAsmList.add("(EQ_FALSE" + (this.stackNo - 2) + ")");
+            this.writeAsmList.add("@" + (this.stackNo - 2));
+            // this.writeAsmList.add("M=0");
             this.writeAsmList.add("M=0");
 
-            this.writeAsmList.add("(EQ_END" + (this.stackNo - 1) + ")");
+            this.writeAsmList.add("@EQ_END" + (this.stackNo - 2));
+            this.writeAsmList.add("D;JMP");
+
+            this.writeAsmList.add("(EQ_TRUE" + (this.stackNo - 2) + ")");
+            this.writeAsmList.add("@" + (this.stackNo - 2));
+            // this.writeAsmList.add("M=1");
+            this.writeAsmList.add("M=-1");
+
+            this.writeAsmList.add("(EQ_END" + (this.stackNo - 2) + ")");
+            this.writeAsmList.add("@" + this.stackPop());
+            this.writeAsmList.add("M=0");
 
         } else if (code.equals("gt")) {
 
             // MEMO: 一旦作ったけど、もっといい方法がありそう
             this.writeAsmList.add("@" + (this.stackNo - 1));
             this.writeAsmList.add("D=M");
+            /*
             this.writeAsmList.add("@" + (this.stackNo - 2));
             this.writeAsmList.add("M=D-M");
             this.writeAsmList.add("@" + this.stackPop());
@@ -87,26 +105,33 @@ public class CodeWriter {
 
             this.writeAsmList.add("@" + (this.stackNo - 1));
             this.writeAsmList.add("D=M");
-            this.writeAsmList.add("@GT_FALSE" + (this.stackNo - 1));
+             */
+
+            this.writeAsmList.add("@" + (this.stackNo - 2));
+            this.writeAsmList.add("D=M-D");
+            this.writeAsmList.add("@GT_TRUE" + (this.stackNo - 2));
             this.writeAsmList.add("D;JGT");
 
-            this.writeAsmList.add("(GT_TRUE" + (this.stackNo - 1) + ")");
-            this.writeAsmList.add("@" + (this.stackNo - 1));
-            this.writeAsmList.add("M=1");
-            this.writeAsmList.add("@GT_END" + (this.stackNo - 1));
+            this.writeAsmList.add("(GT_FALSE" + (this.stackNo - 2) + ")");
+            this.writeAsmList.add("@" + (this.stackNo - 2));
+            this.writeAsmList.add("M=0");
+            this.writeAsmList.add("@GT_END" + (this.stackNo - 2));
             this.writeAsmList.add("D;JMP");
 
-            this.writeAsmList.add("(GT_FALSE" + (this.stackNo - 1) + ")");
-            this.writeAsmList.add("@" + (this.stackNo - 1));
-            this.writeAsmList.add("M=0");
+            this.writeAsmList.add("(GT_TRUE" + (this.stackNo - 2) + ")");
+            this.writeAsmList.add("@" + (this.stackNo - 2));
+            this.writeAsmList.add("M=-1");
 
-            this.writeAsmList.add("(GT_END" + (this.stackNo - 1) + ")");
+            this.writeAsmList.add("(GT_END" + (this.stackNo - 2) + ")");
+            this.writeAsmList.add("@" + this.stackPop());
+            this.writeAsmList.add("M=0");
 
         } else if (code.equals("lt")) {
 
             // MEMO: 一旦作ったけど、もっといい方法がありそう
             this.writeAsmList.add("@" + (this.stackNo - 1));
             this.writeAsmList.add("D=M");
+            /*
             this.writeAsmList.add("@" + (this.stackNo - 2));
             this.writeAsmList.add("M=D-M");
             this.writeAsmList.add("@" + this.stackPop());
@@ -114,20 +139,27 @@ public class CodeWriter {
 
             this.writeAsmList.add("@" + (this.stackNo - 1));
             this.writeAsmList.add("D=M");
-            this.writeAsmList.add("@GT_FALSE" + (this.stackNo - 1));
+             */
+            this.writeAsmList.add("@" + (this.stackNo - 2));
+            this.writeAsmList.add("D=M-D");
+
+            this.writeAsmList.add("@LT_TRUE" + (this.stackNo - 2));
             this.writeAsmList.add("D;JLT");
 
-            this.writeAsmList.add("(LT_TRUE" + (this.stackNo - 1) + ")");
-            this.writeAsmList.add("@" + (this.stackNo - 1));
-            this.writeAsmList.add("M=1");
-            this.writeAsmList.add("@LT_END" + (this.stackNo - 1));
+            this.writeAsmList.add("(LT_FALSE" + (this.stackNo - 2) + ")");
+            this.writeAsmList.add("@" + (this.stackNo - 2));
+            this.writeAsmList.add("M=0");
+            this.writeAsmList.add("@LT_END" + (this.stackNo - 2));
             this.writeAsmList.add("D;JMP");
 
-            this.writeAsmList.add("(LT_FALSE" + (this.stackNo - 1) + ")");
-            this.writeAsmList.add("@" + (this.stackNo - 1));
-            this.writeAsmList.add("M=0");
 
-            this.writeAsmList.add("(LT_END" + (this.stackNo - 1) + ")");
+            this.writeAsmList.add("(LT_TRUE" + (this.stackNo - 2) + ")");
+            this.writeAsmList.add("@" + (this.stackNo - 2));
+            this.writeAsmList.add("M=-1");
+
+            this.writeAsmList.add("(LT_END" + (this.stackNo - 2) + ")");
+            this.writeAsmList.add("@" + this.stackPop());
+            this.writeAsmList.add("M=0");
 
         } else if (code.equals("and")) {
             this.writeAsmList.add("@" + (this.stackNo - 1));
@@ -136,6 +168,7 @@ public class CodeWriter {
             this.writeAsmList.add("M=D&M");
             this.writeAsmList.add("@" + this.stackPop());
             this.writeAsmList.add("M=0");
+
         } else if (code.equals("or")) {
             this.writeAsmList.add("@" + (this.stackNo - 1));
             this.writeAsmList.add("D=M");
@@ -147,6 +180,11 @@ public class CodeWriter {
         if (code.equals("not")) {
             this.writeAsmList.add("@" + (this.stackNo - 1));
             this.writeAsmList.add("M=!M");
+            /*
+            this.writeAsmList.add("D=!M");
+            this.writeAsmList.add("@" + (this.stackNo - 1));
+            this.writeAsmList.add("M=D");
+             */
         }
     }
 
