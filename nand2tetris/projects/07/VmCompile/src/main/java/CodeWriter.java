@@ -198,22 +198,52 @@ public class CodeWriter {
             switch(segment) {
                 case "local":
                     this.writeAsmList.add("@LCL");
+                    this.writeAsmList.add("A=M");
+                    for (int i = 0; i < index; i++) {
+                        this.writeAsmList.add("A=A+1");
+                    }
                     this.writeAsmList.add("D=M");
                     break;
                 case "argument":
-                    this.writeAsmList.add("@ARG" + Integer.toString(index));
+                    this.writeAsmList.add("@ARG");
+                    this.writeAsmList.add("A=M");
+                    for (int i = 0; i < index; i++) {
+                        this.writeAsmList.add("A=A+1");
+                    }
                     this.writeAsmList.add("D=M");
                     break;
                 case "this":
                     this.writeAsmList.add("@THIS");
+                    this.writeAsmList.add("A=M");
+                    for (int i = 0; i < index; i++) {
+                        this.writeAsmList.add("A=A+1");
+                    }
+                    this.writeAsmList.add("D=M");
+                    break;
+                case "that":
+                    this.writeAsmList.add("@THAT");
+                    this.writeAsmList.add("A=M");
+                    for (int i = 0; i < index; i++) {
+                        this.writeAsmList.add("A=A+1");
+                    }
                     this.writeAsmList.add("D=M");
                     break;
                 case "pointer":
-                    this.writeAsmList.add("@THIS" + Integer.toString(index));
+                    this.writeAsmList.add("@3");
+                    // ここは絶対位置指定なので A=Aになる
+                    this.writeAsmList.add("A=A");
+                    for (int i = 0; i < index; i++) {
+                        this.writeAsmList.add("A=A+1");
+                    }
                     this.writeAsmList.add("D=M");
                     break;
                 case "temp":
-                    this.writeAsmList.add("@THAT" + Integer.toString(index));
+                    this.writeAsmList.add("@5");
+                    // ここは絶対位置指定なので A=Aになる
+                    this.writeAsmList.add("A=A");
+                    for (int i = 0; i < index; i++) {
+                        this.writeAsmList.add("A=A+1");
+                    }
                     this.writeAsmList.add("D=M");
                     break;
                 case "constant":
@@ -221,7 +251,9 @@ public class CodeWriter {
                     this.writeAsmList.add("D=A");
                     break;
                 case "static":
-                    this.writeAsmList.add("@THAT");
+                    // this.writeAsmList.add("@THAT");
+                    // this.writeAsmList.add("D=M");
+                    this.writeAsmList.add("@" + saveFileName + "." + index);
                     this.writeAsmList.add("D=M");
                     break;
                 default:
@@ -229,6 +261,7 @@ public class CodeWriter {
             }
             this.writeAsmList.add("@" + this.stackPush());
             this.writeAsmList.add("M=D");
+
         } else if (commandType.equals(CommandType.C_POP)) {
             this.writeAsmList.add("@" + (this.stackNo - 1));
             this.writeAsmList.add("D=M");
@@ -236,6 +269,10 @@ public class CodeWriter {
             switch(segment) {
                 case "local":
                     this.writeAsmList.add("@LCL");
+                    this.writeAsmList.add("A=M");
+                    for (int i = 0; i < index; i++) {
+                        this.writeAsmList.add("A=A+1");
+                    }
                     this.writeAsmList.add("M=D");
                     break;
                 case "argument":
@@ -243,7 +280,6 @@ public class CodeWriter {
                     // this.writeAsmList.add("M=D");
                     this.writeAsmList.add("@ARG");
                     this.writeAsmList.add("A=M");
-                    // TODO: ここであっているかは怪しい
                     for (int i = 0; i < index; i++) {
                         this.writeAsmList.add("A=A+1");
                     }
@@ -251,21 +287,43 @@ public class CodeWriter {
                     break;
                 case "this":
                     this.writeAsmList.add("@THIS");
+                    this.writeAsmList.add("A=M");
+                    for (int i = 0; i < index; i++) {
+                        this.writeAsmList.add("A=A+1");
+                    }
+                    this.writeAsmList.add("M=D");
+                    break;
+                case "that":
+                    this.writeAsmList.add("@THAT");
+                    this.writeAsmList.add("A=M");
+                    for (int i = 0; i < index; i++) {
+                        this.writeAsmList.add("A=A+1");
+                    }
                     this.writeAsmList.add("M=D");
                     break;
                 case "pointer":
-                    this.writeAsmList.add("@THIS+" + Integer.toString(index));
+                    // TODO: この処理は怪しい
+                    this.writeAsmList.add("@3");
+                    for (int i = 0; i < index; i++) {
+                        this.writeAsmList.add("A=A+1");
+                    }
                     this.writeAsmList.add("M=D");
                     break;
                 case "temp":
-                    this.writeAsmList.add("@THAT+" + Integer.toString(index));
+                    // TODO: この処理は怪しい
+                    this.writeAsmList.add("@5");
+                    for (int i = 0; i < index; i++) {
+                        this.writeAsmList.add("A=A+1");
+                    }
                     this.writeAsmList.add("M=D");
                     break;
                 case "constant":
                     // ここには遷移しないはず
                     break;
                 case "static":
-                    this.writeAsmList.add("@THAT");
+                    this.writeAsmList.add("@" + saveFileName + "." + index);
+                    this.writeAsmList.add("D=M");
+                    this.writeAsmList.add("@" + (this.stackNo - 1));
                     this.writeAsmList.add("M=D");
                     break;
                 default:
