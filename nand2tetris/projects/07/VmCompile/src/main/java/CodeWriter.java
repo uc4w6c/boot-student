@@ -322,9 +322,10 @@ public class CodeWriter {
                     break;
                 case "static":
                     this.writeAsmList.add("@" + saveFileName + "." + index);
-                    this.writeAsmList.add("D=M");
-                    this.writeAsmList.add("@" + (this.stackNo - 1));
                     this.writeAsmList.add("M=D");
+                    // this.writeAsmList.add("D=M");
+                    // this.writeAsmList.add("@" + (this.stackNo - 1));
+                    // this.writeAsmList.add("M=D");
                     break;
                 default:
                     break;
