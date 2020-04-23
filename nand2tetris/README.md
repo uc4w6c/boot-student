@@ -31,4 +31,4 @@ $ java -jar ../assembler/build/libs/assembler.jar PongL.asm
  - chapter5: 8h (4/12 16:30)
  - chapter6: 6.5h (4/14 21:30)
  - chapter7: 10.5h (4/21 22:00) // A でメモリを相対的に参照する方法を理解するのが難しかった
- - chapter8: 
+ - chapter8: 0.5h (4/23 23:00)
