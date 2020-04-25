@@ -14,6 +14,7 @@ public class CodeWriter {
     private List<String> writeAsmList = new ArrayList<>();
     private String saveFileName;
     private int stackNo = 256;
+    private int labelNumForReturnAddress = 0;
 
     CodeWriter(String saveFileName) {
         this.saveFileName = saveFileName;
@@ -348,6 +349,152 @@ public class CodeWriter {
     public void writeIf(String label) {
         this.writeAsmList.add("@" + label);
         this.writeAsmList.add("D;JGT");
+    }
+
+    public void writeCall(String functionName, int numArgs) {
+        // push return-address
+        this.writeAsmList.add("@RETURN_ADDRESS_" + this.labelNumForReturnAddress);
+        this.writeAsmList.add("D=A");
+        this.writeAsmList.add("@" + this.stackPush());
+        this.writeAsmList.add("M=D");
+
+        // push LCL
+        this.writeAsmList.add("@LCL");
+        this.writeAsmList.add("A=M");
+        this.writeAsmList.add("D=M");
+        this.writeAsmList.add("@" + this.stackPush());
+        this.writeAsmList.add("M=D");
+
+        // push ARG
+        this.writeAsmList.add("@ARG");
+        this.writeAsmList.add("A=M");
+        this.writeAsmList.add("D=M");
+        this.writeAsmList.add("@" + this.stackPush());
+        this.writeAsmList.add("M=D");
+
+        // push THIS
+        this.writeAsmList.add("@THIS");
+        this.writeAsmList.add("A=M");
+        this.writeAsmList.add("D=M");
+        this.writeAsmList.add("@" + this.stackPush());
+        this.writeAsmList.add("M=D");
+
+        // push THAT
+        this.writeAsmList.add("@THAT");
+        this.writeAsmList.add("A=M");
+        this.writeAsmList.add("D=M");
+        this.writeAsmList.add("@" + this.stackPush());
+        this.writeAsmList.add("M=D");
+
+        // ARG = SP - n - 5
+        this.writeAsmList.add("@SP");
+        this.writeAsmList.add("D=M");
+        for (int i = 0; i < numArgs + 5; i++) {
+            this.writeAsmList.add("D=D-1");
+        }
+        this.writeAsmList.add("@ARG");
+        this.writeAsmList.add("M=D");
+
+        // LCL = SP
+        this.writeAsmList.add("@SP");
+        this.writeAsmList.add("D=M");
+        this.writeAsmList.add("@LCL");
+        this.writeAsmList.add("M=D");
+
+        // goto f
+        this.writeAsmList.add("@" + functionName);
+        this.writeAsmList.add("0;JMP");
+
+        // (return-address)
+        this.writeAsmList.add("(@RETURN_ADDRESS_" +
+                                    this.labelNumForReturnAddress++ + ")");
+    }
+
+    public void writeReturn() {
+        // FRAME = LCL
+        this.writeAsmList.add("@LCL");
+        this.writeAsmList.add("D=M");
+        this.writeAsmList.add("@R13");
+        this.writeAsmList.add("M=D");
+
+        // RET = *(FRAME-5)
+        this.writeAsmList.add("@R13");
+        this.writeAsmList.add("A=M");
+        for (int i = 0; i < 5; i++) {
+            this.writeAsmList.add("A=A-1");
+        }
+        this.writeAsmList.add("D=M");
+        this.writeAsmList.add("@R14");
+        this.writeAsmList.add("M=D");
+
+        // *ARG = pop()
+        this.writeAsmList.add("@" + this.stackPop());
+        this.writeAsmList.add("D=M");
+        this.writeAsmList.add("@ARG");
+        this.writeAsmList.add("A=M");
+        this.writeAsmList.add("M=D");
+
+        // SP = ARG + 1
+        this.writeAsmList.add("@ARG");
+        this.writeAsmList.add("D=M");
+        this.writeAsmList.add("@SP");
+        this.writeAsmList.add("M=D+1");
+
+        // THAT = *(FRAME-1)
+        this.writeAsmList.add("@R13");
+        this.writeAsmList.add("A=M");
+        this.writeAsmList.add("A=A-1");
+        this.writeAsmList.add("D=M");
+        this.writeAsmList.add("@THAT");
+        this.writeAsmList.add("M=D");
+
+        // THIS = *(FRAME-2)
+        this.writeAsmList.add("@R13");
+        this.writeAsmList.add("A=M");
+        for (int i = 0; i < 2; i++) {
+            this.writeAsmList.add("A=A-1");
+        }
+        this.writeAsmList.add("D=M");
+        this.writeAsmList.add("@THIS");
+        this.writeAsmList.add("M=D");
+
+        // ARG = *(FRAME-3)
+        this.writeAsmList.add("@R13");
+        this.writeAsmList.add("A=M");
+        for (int i = 0; i < 3; i++) {
+            this.writeAsmList.add("A=A-1");
+        }
+        this.writeAsmList.add("D=M");
+        this.writeAsmList.add("@ARG");
+        this.writeAsmList.add("M=D");
+
+        // LCL = *(FRAME-4)
+        this.writeAsmList.add("@R13");
+        this.writeAsmList.add("A=M");
+        for (int i = 0; i < 4; i++) {
+            this.writeAsmList.add("A=A-1");
+        }
+        this.writeAsmList.add("D=M");
+        this.writeAsmList.add("@LCL");
+        this.writeAsmList.add("M=D");
+
+        // goto RET
+        this.writeAsmList.add("@R14");
+        this.writeAsmList.add("A=M");
+        this.writeAsmList.add("D;JGT");
+    }
+
+    public void writeFunction(String functionName, int numLocals) {
+        this.writeLabel(functionName);
+        for (int i = 0; i < numLocals; i++) {
+            this.writeAsmList.add("@LCL");
+            this.writeAsmList.add("A=M");
+            for (int j = 0; j < numLocals; j++) {
+                this.writeAsmList.add("A=A+1");
+            }
+            this.writeAsmList.add("@0");
+            this.writeAsmList.add("M=0");
+        }
     }
 
     public void save() {

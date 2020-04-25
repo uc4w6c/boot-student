@@ -24,13 +24,29 @@ public class Main {
         String outputPath = null;
         if (Files.isDirectory(path)) {
             try {
-                filePaths = Files.list(path)
-                                .filter(fileName -> fileName.endsWith(".csv"))
+                // TODO: ファイル一覧が取得出来ていない
+                System.out.println("Start");
+                System.out.println("Path:" + path.toString());
+                Files.list(path)
+                        .filter(fileName -> fileName.equals("Main.vm"))
+                        .forEach(System.out::println);
+                Files.list(path)
+                        .filter(fileName -> fileName.endsWith(".vm"))
+                        .forEach(System.out::println);
+                System.out.println("End");
+
+                var mainFilePaths = Files.list(path)
+                                .filter(fileName -> fileName.equals("Main.vm"))
                                 .collect(Collectors.toList());
+                filePaths.addAll(mainFilePaths);
+                var notMainFilePaths = Files.list(path)
+                                .filter(fileName -> fileName.endsWith(".vm"))
+                                .collect(Collectors.toList());
+                filePaths.addAll(notMainFilePaths);
             } catch (IOException e) {
                 throw new RuntimeException(e);
             }
-            outputPath = path + "asm";
+            outputPath = path + "/" + path + ".asm";
         } else {
             filePaths.add(path);
             outputPath = path.toString().replace(".vm", ".asm");
@@ -54,6 +70,8 @@ public class Main {
                     codeWriter.writeGoto(parser.arg1());
                 } else if (parser.commandType().equals(CommandType.C_IF)) {
                     codeWriter.writeIf(parser.arg1());
+                } else if (parser.commandType().equals(CommandType.C_RETURN)) {
+                    codeWriter.writeReturn();
                 }
                 parser.advance();
             }
