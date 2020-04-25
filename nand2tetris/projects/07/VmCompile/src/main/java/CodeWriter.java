@@ -336,6 +336,20 @@ public class CodeWriter {
         }
     }
 
+    public void writeLabel(String label) {
+        this.writeAsmList.add("(" + label + ")");
+    }
+
+    public void writeGoto(String label) {
+        this.writeAsmList.add("@" + label);
+        this.writeAsmList.add("0;JMP");
+    }
+
+    public void writeIf(String label) {
+        this.writeAsmList.add("@" + label);
+        this.writeAsmList.add("D;JGT");
+    }
+
     public void save() {
         var writePath = Paths.get(saveFileName);
         try {

@@ -48,6 +48,12 @@ public class Main {
                                             Integer.parseInt(parser.arg2()));
                 } else if (parser.commandType().equals(CommandType.C_ARITHMETIC)) {
                     codeWriter.writeArithmetic(parser.getCode());
+                } else if (parser.commandType().equals(CommandType.C_LABEL)) {
+                    codeWriter.writeLabel(parser.arg1());
+                } else if (parser.commandType().equals(CommandType.C_GOTO)) {
+                    codeWriter.writeGoto(parser.arg1());
+                } else if (parser.commandType().equals(CommandType.C_IF)) {
+                    codeWriter.writeIf(parser.arg1());
                 }
                 parser.advance();
             }
