@@ -12,11 +12,13 @@ import java.util.List;
 
 public class CodeWriter {
     private List<String> writeAsmList = new ArrayList<>();
+    private String saveDirPath;
     private String saveFileName;
     private int stackNo = 256;
     private int labelNumForReturnAddress = 0;
 
-    CodeWriter(String saveFileName) {
+    CodeWriter(String saveDirPath, String saveFileName) {
+        this.saveDirPath = saveDirPath;
         this.saveFileName = saveFileName;
     }
 
@@ -360,21 +362,21 @@ public class CodeWriter {
 
         // push LCL
         this.writeAsmList.add("@LCL");
-        this.writeAsmList.add("A=M");
+        // this.writeAsmList.add("A=M");
         this.writeAsmList.add("D=M");
         this.writeAsmList.add("@" + this.stackPush());
         this.writeAsmList.add("M=D");
 
         // push ARG
         this.writeAsmList.add("@ARG");
-        this.writeAsmList.add("A=M");
+        // this.writeAsmList.add("A=M");
         this.writeAsmList.add("D=M");
         this.writeAsmList.add("@" + this.stackPush());
         this.writeAsmList.add("M=D");
 
         // push THIS
         this.writeAsmList.add("@THIS");
-        this.writeAsmList.add("A=M");
+        // this.writeAsmList.add("A=M");
         this.writeAsmList.add("D=M");
         this.writeAsmList.add("@" + this.stackPush());
         this.writeAsmList.add("M=D");
@@ -387,17 +389,29 @@ public class CodeWriter {
         this.writeAsmList.add("M=D");
 
         // ARG = SP - n - 5
-        this.writeAsmList.add("@SP");
-        this.writeAsmList.add("D=M");
+        // this.writeAsmList.add("@SP"); // SPで管理していない・・・から
+        // this.writeAsmList.add("D=M");
+        this.writeAsmList.add("@" + this.stackNo);
+        this.writeAsmList.add("D=A");
         for (int i = 0; i < numArgs + 5; i++) {
             this.writeAsmList.add("D=D-1");
         }
         this.writeAsmList.add("@ARG");
         this.writeAsmList.add("M=D");
+         /*
+        this.writeAsmList.add("A=M");
+        for (int i = 0; i < numArgs + 5; i++) {
+            this.writeAsmList.add("A=A-1");
+        }
+        this.writeAsmList.add("@ARG");
+        this.writeAsmList.add("M=A");
+         */
 
         // LCL = SP
-        this.writeAsmList.add("@SP");
-        this.writeAsmList.add("D=M");
+        // this.writeAsmList.add("@SP"); // SPで管理していない・・・から
+        // this.writeAsmList.add("D=M");
+        this.writeAsmList.add("@" + this.stackNo);
+        this.writeAsmList.add("D=A");
         this.writeAsmList.add("@LCL");
         this.writeAsmList.add("M=D");
 
@@ -406,7 +420,7 @@ public class CodeWriter {
         this.writeAsmList.add("0;JMP");
 
         // (return-address)
-        this.writeAsmList.add("(@RETURN_ADDRESS_" +
+        this.writeAsmList.add("(RETURN_ADDRESS_" +
                                     this.labelNumForReturnAddress++ + ")");
     }
 
@@ -418,12 +432,20 @@ public class CodeWriter {
         this.writeAsmList.add("M=D");
 
         // RET = *(FRAME-5)
+        /*
         this.writeAsmList.add("@R13");
         this.writeAsmList.add("A=M");
         for (int i = 0; i < 5; i++) {
             this.writeAsmList.add("A=A-1");
         }
         this.writeAsmList.add("D=M");
+         */
+        this.writeAsmList.add("@5");
+        this.writeAsmList.add("D=A");
+        this.writeAsmList.add("@R13");
+        this.writeAsmList.add("A=M-D");
+        this.writeAsmList.add("D=M");
+
         this.writeAsmList.add("@R14");
         this.writeAsmList.add("M=D");
 
@@ -442,38 +464,50 @@ public class CodeWriter {
 
         // THAT = *(FRAME-1)
         this.writeAsmList.add("@R13");
+        /*
         this.writeAsmList.add("A=M");
         this.writeAsmList.add("A=A-1");
+         */
+        this.writeAsmList.add("AM=M-1");
         this.writeAsmList.add("D=M");
         this.writeAsmList.add("@THAT");
         this.writeAsmList.add("M=D");
 
         // THIS = *(FRAME-2)
         this.writeAsmList.add("@R13");
+        /*
         this.writeAsmList.add("A=M");
         for (int i = 0; i < 2; i++) {
             this.writeAsmList.add("A=A-1");
         }
+         */
+        this.writeAsmList.add("M=M-1");
         this.writeAsmList.add("D=M");
         this.writeAsmList.add("@THIS");
         this.writeAsmList.add("M=D");
 
         // ARG = *(FRAME-3)
         this.writeAsmList.add("@R13");
+        /*
         this.writeAsmList.add("A=M");
         for (int i = 0; i < 3; i++) {
             this.writeAsmList.add("A=A-1");
         }
+         */
+        this.writeAsmList.add("M=M-1");
         this.writeAsmList.add("D=M");
         this.writeAsmList.add("@ARG");
         this.writeAsmList.add("M=D");
 
         // LCL = *(FRAME-4)
         this.writeAsmList.add("@R13");
+        /*
         this.writeAsmList.add("A=M");
         for (int i = 0; i < 4; i++) {
             this.writeAsmList.add("A=A-1");
         }
+         */
+        this.writeAsmList.add("M=M-1");
         this.writeAsmList.add("D=M");
         this.writeAsmList.add("@LCL");
         this.writeAsmList.add("M=D");
@@ -486,6 +520,7 @@ public class CodeWriter {
 
     public void writeFunction(String functionName, int numLocals) {
         this.writeLabel(functionName);
+        /*
         for (int i = 0; i < numLocals; i++) {
             this.writeAsmList.add("@LCL");
             this.writeAsmList.add("A=M");
@@ -495,10 +530,19 @@ public class CodeWriter {
             this.writeAsmList.add("@0");
             this.writeAsmList.add("M=0");
         }
+         */
+        this.writeAsmList.add("D=0");
+        for (int i = 0; i < numLocals; i++) {
+            this.writeAsmList.add("@" + this.stackPush());
+            this.writeAsmList.add("M=D");
+        }
     }
 
     public void save() {
-        var writePath = Paths.get(saveFileName);
+        String savePath = (saveDirPath == null) ?
+                            this.saveFileName :
+                            (this.saveDirPath + "/" + this.saveFileName);
+        var writePath = Paths.get(savePath);
         try {
             System.out.println("path:" + writePath.toAbsolutePath());
             Files.write(writePath,

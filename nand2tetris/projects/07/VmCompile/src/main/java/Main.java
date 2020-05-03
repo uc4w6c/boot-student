@@ -21,39 +21,51 @@ public class Main {
                     "FileName:" + pathName);
         }
         List<Path> filePaths = new ArrayList<>();
-        String outputPath = null;
+        String outDirPath = null;
+        String outFileName = null;
         if (Files.isDirectory(path)) {
             try {
-                // TODO: ファイル一覧が取得出来ていない
+                /*
                 System.out.println("Start");
                 System.out.println("Path:" + path.toString());
+                 */
+                /*
                 Files.list(path)
-                        .filter(fileName -> fileName.equals("Main.vm"))
+                        .forEach(System.out::println);
+                */
+                /*
+                Files.list(path)
+                        .filter(fileName -> fileName.toString().endsWith("Sys.vm"))
                         .forEach(System.out::println);
                 Files.list(path)
-                        .filter(fileName -> fileName.endsWith(".vm"))
+                        .filter(fileName -> !fileName.toString().endsWith("Sys.vm"))
+                        .filter(fileName -> fileName.toString().endsWith(".vm"))
                         .forEach(System.out::println);
                 System.out.println("End");
-
+                */
                 var mainFilePaths = Files.list(path)
-                                .filter(fileName -> fileName.equals("Main.vm"))
+                                .filter(fileName -> fileName.toString().endsWith("Sys.vm"))
                                 .collect(Collectors.toList());
                 filePaths.addAll(mainFilePaths);
                 var notMainFilePaths = Files.list(path)
-                                .filter(fileName -> fileName.endsWith(".vm"))
+                                .filter(fileName -> !fileName.toString().endsWith("Sys.vm"))
+                                .filter(fileName -> fileName.toString().endsWith(".vm"))
                                 .collect(Collectors.toList());
                 filePaths.addAll(notMainFilePaths);
             } catch (IOException e) {
                 throw new RuntimeException(e);
             }
-            outputPath = path + "/" + path + ".asm";
+            outDirPath = path.toString();
+            outFileName = path.toString() + ".asm";
         } else {
             filePaths.add(path);
-            outputPath = path.toString().replace(".vm", ".asm");
+            outDirPath = null;
+            outFileName = path.toString().replace(".vm", ".asm");
         }
 
-        CodeWriter codeWriter = new CodeWriter(outputPath);
+        CodeWriter codeWriter = new CodeWriter(outDirPath, outFileName);
         for(Path filePath : filePaths) {
+            System.out.println("filePath:" + filePath.toString());
             Parser parser = new Parser(filePath);
             while (parser.hasMoreCommands()) {
                 if (parser.commandType().equals(CommandType.C_PUSH) ||
@@ -72,6 +84,10 @@ public class Main {
                     codeWriter.writeIf(parser.arg1());
                 } else if (parser.commandType().equals(CommandType.C_RETURN)) {
                     codeWriter.writeReturn();
+                } else if (parser.commandType().equals(CommandType.C_FUNCTION)) {
+                    codeWriter.writeFunction(parser.arg1(), Integer.parseInt(parser.arg2()));
+                } else if (parser.commandType().equals(CommandType.C_CALL)) {
+                    codeWriter.writeCall(parser.arg1(), Integer.parseInt(parser.arg2()));
                 }
                 parser.advance();
             }
