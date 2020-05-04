@@ -32,4 +32,4 @@ $ java -jar ../assembler/build/libs/assembler.jar PongL.asm
  - chapter6: 6.5h (4/14 21:30)
  - chapter7: 10.5h (4/21 22:00) // A でメモリを相対的に参照する方法を理解するのが難しかった
  - chapter8: 5h (4/23 23:30) // StaticTestができていない。SP(RAM[0])の使い方がわかっていなかったから。めんどくさいのでもうやめる
- - chapter9: 1h (5/3 22:00) // プロジェクト開始
+ - chapter9: 1.5h (5/3 22:00) // プロジェクト開始
