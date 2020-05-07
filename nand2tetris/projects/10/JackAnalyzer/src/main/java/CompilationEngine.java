@@ -110,9 +110,28 @@ public class CompilationEngine {
     }
 
     private void compileClassVarDec() {
-        final String ELEMENT_TAG_NAME = "classVarDec";
+        final String ELEMENT_TAG_NAME = "varDec";
         this.writeElementStart(ELEMENT_TAG_NAME);
 
+        this.writeElement("keyword", jackTokenizer.getToken());
+        jackTokenizer.advance();
+        this.writeElement("keyword", jackTokenizer.getToken());
+        jackTokenizer.advance();
+        this.writeElement("identifier", jackTokenizer.getToken());
+        jackTokenizer.advance();
+        while (true) {
+            if (jackTokenizer.getToken().equals(";")) break;
+
+            // , は処理対象から除外
+            if (jackTokenizer.getToken().equals(TokenType.SYMBOL) &&
+                jackTokenizer.getToken().equals(",")) {
+                jackTokenizer.advance();
+            }
+            jackTokenizer.advance();
+            this.writeElement("identifier", jackTokenizer.getToken());
+        }
+
+        this.writeElement("symbol", jackTokenizer.getToken());
 
         this.writeElementEnd(ELEMENT_TAG_NAME);
     }
@@ -132,17 +151,22 @@ public class CompilationEngine {
         jackTokenizer.advance();
         this.compileParameterList();
 
-        // subroutine終了までループ
-        while (jackTokenizer.hasMoreTokens()) {
-            if (jackTokenizer.tokenType().equals(TokenType.KEYWORD)) {
-                switch (jackTokenizer.getToken()) {
-                    case "":
-                }
-            } else if (jackTokenizer.tokenType().equals(TokenType.SYMBOL)) {
-            } else {
+        // var
+        while (true) {
+            if (jackTokenizer.hasMoreTokens()) {
+                break;
             }
+            if (!jackTokenizer.tokenType().equals(TokenType.KEYWORD) ||
+                !jackTokenizer.getToken().equals("var")) {
+                break;
+            }
+            this.compileClassVarDec();
             jackTokenizer.advance();
         }
+
+        // statements
+        this.compileStatements();
+
         this.writeElementEnd(ELEMENT_TAG_NAME);
     }
 
@@ -172,8 +196,132 @@ public class CompilationEngine {
 
     }
 
+    private void compileStatements() {
+        final String STATEMENTS_TAG_NAME = "statements";
 
+        this.writeElementStart(STATEMENTS_TAG_NAME);
+        // subroutine終了までループ
+        while (jackTokenizer.hasMoreTokens()) {
+            if (jackTokenizer.tokenType().equals(TokenType.KEYWORD)) {
+                switch (jackTokenizer.getToken()) {
+                    case "let": this.compileLet();
+                    case "if": this.compileIf();
+                    case "while": this.compileWhile();
+                    case "do": this.compileDo();
+                    case "return": this.compileReturn();
+                }
+            } else if (jackTokenizer.tokenType().equals(TokenType.SYMBOL)) {
+            } else {
+            }
+            jackTokenizer.advance();
+        }
+        this.writeElementEnd(STATEMENTS_TAG_NAME);
+    }
 
+    private void compileDo() {
+
+    }
+
+    private void compileLet() {
+        final String STATEMENTS_TAG_NAME = "letStatement";
+        this.writeElementStart(STATEMENTS_TAG_NAME);
+
+        this.writeElement("keyword", jackTokenizer.getToken());
+
+        jackTokenizer.advance();
+        this.writeElement("identifier", jackTokenizer.getToken());
+
+        jackTokenizer.advance();
+        if (jackTokenizer.tokenType().equals(TokenType.SYMBOL) &&
+                jackTokenizer.getToken().equals("[")) {
+
+            this.writeElement("symbol", jackTokenizer.getToken());
+
+            this.compileExpression();
+
+            this.writeElement("symbol", jackTokenizer.getToken());
+            jackTokenizer.advance();
+        }
+
+        // '=' part
+        this.writeElement("symbol", jackTokenizer.getToken());
+
+        // subroutine終了までループ
+        while (true) {
+            if (jackTokenizer.tokenType().equals(TokenType.SYMBOL) &&
+                jackTokenizer.getToken().equals(";")) {
+                break;
+            }
+
+            if (jackTokenizer.tokenType().equals(TokenType.SYMBOL) &&
+                    jackTokenizer.getToken().equals("=")) {
+                this.writeElement("symbol", jackTokenizer.getToken());
+            }
+
+            if (jackTokenizer.tokenType().equals(TokenType.KEYWORD)) {
+                switch (jackTokenizer.getToken()) {
+                    case "let": this.compileLet();
+                    case "if": this.compileIf();
+                    case "while": this.compileWhile();
+                    case "do": this.compileDo();
+                    case "return": this.compileReturn();
+                }
+            } else if (jackTokenizer.tokenType().equals(TokenType.SYMBOL)) {
+            } else {
+            }
+            jackTokenizer.advance();
+        }
+
+        this.writeElement("symbol", jackTokenizer.getToken());
+
+        this.writeElementEnd(STATEMENTS_TAG_NAME);
+    }
+
+    private void compileWhile() {
+
+    }
+
+    private void compileReturn() {
+
+    }
+
+    private void compileIf() {
+
+    }
+
+    private void compileExpression() {
+        final String EXPRESSION_TAG_NAME = "expression";
+        final String TERM_TAG_NAME = "term";
+        this.writeElementStart(EXPRESSION_TAG_NAME);
+
+        // subroutine終了までループ
+        while (true) {
+            if (jackTokenizer.tokenType().equals(TokenType.SYMBOL) &&
+                    jackTokenizer.getToken().equals(";")) {
+                break;
+            }
+
+            if (jackTokenizer.tokenType().equals(TokenType.SYMBOL) &&
+                    jackTokenizer.getToken().equals("=")) {
+                this.writeElement("symbol", jackTokenizer.getToken());
+            }
+
+            if (jackTokenizer.tokenType().equals(TokenType.KEYWORD)) {
+                switch (jackTokenizer.getToken()) {
+                    case "let": this.compileLet();
+                    case "if": this.compileIf();
+                    case "while": this.compileWhile();
+                    case "do": this.compileDo();
+                    case "return": this.compileReturn();
+                }
+            } else if (jackTokenizer.tokenType().equals(TokenType.SYMBOL)) {
+            } else {
+            }
+            jackTokenizer.advance();
+        }
+
+        this.writeElementEnd(EXPRESSION_TAG_NAME);
+    }
 
 
     public void save() {
