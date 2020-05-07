@@ -294,29 +294,32 @@ public class CompilationEngine {
         final String TERM_TAG_NAME = "term";
         this.writeElementStart(EXPRESSION_TAG_NAME);
 
-        // subroutine終了までループ
         while (true) {
-            if (jackTokenizer.tokenType().equals(TokenType.SYMBOL) &&
-                    jackTokenizer.getToken().equals(";")) {
-                break;
-            }
-
-            if (jackTokenizer.tokenType().equals(TokenType.SYMBOL) &&
-                    jackTokenizer.getToken().equals("=")) {
-                this.writeElement("symbol", jackTokenizer.getToken());
-            }
-
-            if (jackTokenizer.tokenType().equals(TokenType.KEYWORD)) {
-                switch (jackTokenizer.getToken()) {
-                    case "let": this.compileLet();
-                    case "if": this.compileIf();
-                    case "while": this.compileWhile();
-                    case "do": this.compileDo();
-                    case "return": this.compileReturn();
+            if (jackTokenizer.tokenType().equals(TokenType.SYMBOL)) {
+                // ')' or ']' の場合はExpression処理終了
+                if (jackTokenizer.getToken().equals(")") ||
+                    jackTokenizer.getToken().equals("]")) {
+                    this.writeElementEnd(TERM_TAG_NAME);
+                    break;
                 }
-            } else if (jackTokenizer.tokenType().equals(TokenType.SYMBOL)) {
-            } else {
+                if (jackTokenizer.getToken().equals(")") ||
+                    jackTokenizer.getToken().equals("]")) {
+
+                    this.writeElement("symbol", jackTokenizer.getToken());
+                    this.compileExpression();
+                    this.writeElement("symbol", jackTokenizer.getToken());
+                }
+                // TODO: 以下追加すること
+                if (jackTokenizer.getToken().equals("+") ||
+                    jackTokenizer.getToken().equals("-")) {
+
+                }
             }
+            // TODO: 変数, 文字列, 数値型の処理を追加
+            if (jackTokenizer.tokenType().equals(TokenType.STRING_CONST)) {
+                this.writeElementStart(TERM_TAG_NAME);
+            }
+
             jackTokenizer.advance();
         }
 
