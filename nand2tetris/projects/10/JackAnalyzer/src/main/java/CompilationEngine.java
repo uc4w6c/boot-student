@@ -278,20 +278,99 @@ public class CompilationEngine {
     }
 
     private void compileWhile() {
+        final String WHILE_TAG_NAME = "whileStatement";
+        this.writeElementStart(WHILE_TAG_NAME);
 
+        this.writeElement("keyword", jackTokenizer.getToken());
+
+        // '(' expression ')' の間の条件文
+        jackTokenizer.advance();
+        this.writeElement("symbol", jackTokenizer.getToken());
+
+        jackTokenizer.advance();
+        this.compileExpression();
+
+        this.writeElement("symbol", jackTokenizer.getToken());
+
+        // '{' statements '}' の間の処理文
+        jackTokenizer.advance();
+        this.writeElement("symbol", jackTokenizer.getToken());
+
+        jackTokenizer.advance();
+        this.compileStatements();
+
+        this.writeElement("symbol", jackTokenizer.getToken());
+
+
+        this.writeElementEnd(WHILE_TAG_NAME);
     }
 
     private void compileReturn() {
+        final String RETURN_TAG_NAME = "returnStatement";
+        this.writeElementStart(RETURN_TAG_NAME);
 
+        // ';' でない場合はexpression
+        if (!jackTokenizer.tokenType().equals(TokenType.SYMBOL) ||
+                !jackTokenizer.getToken().equals(";")) {
+
+            this.compileExpression();
+        }
+
+        this.writeElementEnd(RETURN_TAG_NAME);
     }
 
     private void compileIf() {
+        final String IF_TAG_NAME = "ifStatement";
+        this.writeElementStart(IF_TAG_NAME);
 
+        this.writeElement("keyword", jackTokenizer.getToken());
+
+        // '(' expression ')' の間の条件文
+        jackTokenizer.advance();
+        this.writeElement("symbol", jackTokenizer.getToken());
+
+        this.compileExpression();
+
+        this.writeElement("symbol", jackTokenizer.getToken());
+
+        // '{' statements '}' の間の処理文
+        jackTokenizer.advance();
+        this.writeElement("symbol", jackTokenizer.getToken());
+
+        jackTokenizer.advance();
+        this.compileStatements();
+
+        this.writeElement("symbol", jackTokenizer.getToken());
+
+        jackTokenizer.advance();
+
+        // 'else' が存在する場合は継続
+        while (true) {
+            if (!jackTokenizer.tokenType().equals(TokenType.SYMBOL) ||
+                    !jackTokenizer.getToken().equals("else")) {
+
+                break;
+            }
+            this.writeElement("keyword", jackTokenizer.getToken());
+
+            // '{' statements '}' の間の処理文
+            jackTokenizer.advance();
+            this.writeElement("symbol", jackTokenizer.getToken());
+
+            jackTokenizer.advance();
+            this.compileStatements();
+
+            this.writeElement("symbol", jackTokenizer.getToken());
+
+            jackTokenizer.advance();
+        }
+
+
+        this.writeElementEnd(IF_TAG_NAME);
     }
 
     private void compileExpression() {
         final String EXPRESSION_TAG_NAME = "expression";
-        final String TERM_TAG_NAME = "term";
         this.writeElementStart(EXPRESSION_TAG_NAME);
 
         while (true) {
@@ -299,7 +378,6 @@ public class CompilationEngine {
                 // ')' or ']' の場合はExpression処理終了
                 if (jackTokenizer.getToken().equals(")") ||
                     jackTokenizer.getToken().equals("]")) {
-                    this.writeElementEnd(TERM_TAG_NAME);
                     break;
                 }
                 if (jackTokenizer.getToken().equals(")") ||
@@ -309,15 +387,30 @@ public class CompilationEngine {
                     this.compileExpression();
                     this.writeElement("symbol", jackTokenizer.getToken());
                 }
-                // TODO: 以下追加すること
                 if (jackTokenizer.getToken().equals("+") ||
-                    jackTokenizer.getToken().equals("-")) {
+                        jackTokenizer.getToken().equals("-") ||
+                        jackTokenizer.getToken().equals("-") ||
+                        jackTokenizer.getToken().equals("*") ||
+                        jackTokenizer.getToken().equals("/") ||
+                        jackTokenizer.getToken().equals("&") ||
+                        jackTokenizer.getToken().equals("|") ||
+                        jackTokenizer.getToken().equals("<") ||
+                        jackTokenizer.getToken().equals(">") ||
+                        jackTokenizer.getToken().equals("=") ||
+                        jackTokenizer.getToken().equals("~")) {
+
+                    this.writeElement("symbol", jackTokenizer.getToken());
 
                 }
+                if (jackTokenizer.getToken().equals(";")) {
+                    break;
+                }
             }
-            // TODO: 変数, 文字列, 数値型の処理を追加
-            if (jackTokenizer.tokenType().equals(TokenType.STRING_CONST)) {
-                this.writeElementStart(TERM_TAG_NAME);
+            // 変数, 文字列, 数値型の場合はterm処理
+            if (jackTokenizer.tokenType().equals(TokenType.STRING_CONST) ||
+                    jackTokenizer.tokenType().equals(TokenType.INT_CONST) ||
+                    jackTokenizer.tokenType().equals(TokenType.IDENTIFIER)) {
+                this.compileTerm();
             }
 
             jackTokenizer.advance();
@@ -326,6 +419,81 @@ public class CompilationEngine {
         this.writeElementEnd(EXPRESSION_TAG_NAME);
     }
 
+    private void compileTerm() {
+        final String TERM_TAG_NAME = "term";
+        this.writeElementStart(TERM_TAG_NAME);
+
+        while (true) {
+            if (jackTokenizer.tokenType().equals(TokenType.SYMBOL)) {
+                // ')' or ']' の場合はExpression処理終了
+                if (jackTokenizer.getToken().equals(")") ||
+                        jackTokenizer.getToken().equals("]")) {
+
+                    this.writeElement("symbol", jackTokenizer.getToken());
+                    jackTokenizer.advance();
+                    break;
+                }
+                if (jackTokenizer.getToken().equals(".")) {
+                    this.writeElement("symbol", jackTokenizer.getToken());
+                    jackTokenizer.advance();
+                }
+                if (jackTokenizer.getToken().equals("(") ||
+                        jackTokenizer.getToken().equals("[")) {
+
+                    this.compileExpressionList();
+                }
+
+                if (jackTokenizer.getToken().equals("+") ||
+                        jackTokenizer.getToken().equals("-") ||
+                        jackTokenizer.getToken().equals("-") ||
+                        jackTokenizer.getToken().equals("*") ||
+                        jackTokenizer.getToken().equals("/") ||
+                        jackTokenizer.getToken().equals("&") ||
+                        jackTokenizer.getToken().equals("|") ||
+                        jackTokenizer.getToken().equals("<") ||
+                        jackTokenizer.getToken().equals(">") ||
+                        jackTokenizer.getToken().equals("=") ||
+                        jackTokenizer.getToken().equals("~") ||
+                        jackTokenizer.getToken().equals(";")) {
+
+                    break;
+                }
+            }
+            // 変数, 文字列, 数値型の処理
+            if (jackTokenizer.tokenType().equals(TokenType.STRING_CONST)) {
+                var stringConstant = jackTokenizer.getToken().replace("\"", "");
+                this.writeElement("stringConstant", stringConstant);
+            }
+            if (jackTokenizer.tokenType().equals(TokenType.INT_CONST)) {
+                this.writeElement("integerConstant", jackTokenizer.getToken());
+            }
+            if (jackTokenizer.tokenType().equals(TokenType.IDENTIFIER)) {
+                this.writeElement("identifier", jackTokenizer.getToken());
+            }
+
+            jackTokenizer.advance();
+        }
+
+        this.writeElementEnd(TERM_TAG_NAME);
+    }
+
+    private void compileExpressionList() {
+        final String EXPRESSION_LIST_TAG_NAME = "expressionList";
+        this.writeElementStart(EXPRESSION_LIST_TAG_NAME);
+
+        while (true) {
+            // ',' の場合はExpressionList継続
+            if (jackTokenizer.tokenType().equals(TokenType.SYMBOL)) {
+                if (!jackTokenizer.getToken().equals(",")) {
+                    break;
+                }
+                jackTokenizer.advance();
+            }
+            this.compileExpression();
+        }
+
+        this.writeElementEnd(EXPRESSION_LIST_TAG_NAME);
+    }
 
     public void save() {
         var path = Paths.get(this.dirPath.isEmpty() ?
