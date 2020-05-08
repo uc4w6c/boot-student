@@ -19,13 +19,14 @@ public class CompilationEngine {
     public CompilationEngine(Optional<String> dirPath, String fileName) {
         this.dirPath = dirPath;
         this.fileName = fileName;
+        // System.out.println("File Path: " + dirPath.get() + ", " + fileName);
 
         var path = this.dirPath.isEmpty() ? this.fileName : (this.dirPath.get() + "/" + this.fileName);
         this.jackTokenizer = new JackTokenizer(path);
 
         jackTokenizer.advance();
         if ((!jackTokenizer.tokenType().equals(TokenType.KEYWORD)) ||
-            (jackTokenizer.getToken() != "class")) {
+            (!jackTokenizer.getToken().equals("class"))) {
 
             throw new IllegalArgumentException("classが見つかりません。");
         }
@@ -60,6 +61,21 @@ public class CompilationEngine {
         outputCode.add("${indent}</${tagName}>");
     }
 
+    private void compileVarDec() {
+        final String VAR_DEC_TAG_NAME = "classVarDec";
+        this.writeElementStart(VAR_DEC_TAG_NAME);
+
+        this.writeElement("keyword", jackTokenizer.getToken());
+        jackTokenizer.advance();
+        this.writeElement("keyword", jackTokenizer.getToken());
+        jackTokenizer.advance();
+        this.writeElement("identifier", jackTokenizer.getToken());
+        jackTokenizer.advance();
+        this.writeElement("symbol", jackTokenizer.getToken());
+
+        this.writeElementEnd(VAR_DEC_TAG_NAME);
+    }
+
     private void compileClass() {
         this.writeElementStart("class");
         this.writeElement("keyword", "class");
@@ -69,8 +85,8 @@ public class CompilationEngine {
             throw new IllegalArgumentException("class定義に誤りがあります。");
         }
         this.writeElement("identifier", jackTokenizer.getToken());
-        jackTokenizer.advance();
 
+        jackTokenizer.advance();
         if (!jackTokenizer.tokenType().equals(TokenType.SYMBOL)) {
             throw new IllegalArgumentException("class定義に誤りがあります。");
         }
@@ -88,10 +104,13 @@ public class CompilationEngine {
                     case "constructor":
                     case "method":
                     case "function": {
-
+                        this.compileSubroutine();
                         break;
                     }
-
+                    case "var": {
+                        this.compileVarDec();
+                        break;
+                    }
                 }
 
             // SYMBOLが見つかった場合はクラス定義終了

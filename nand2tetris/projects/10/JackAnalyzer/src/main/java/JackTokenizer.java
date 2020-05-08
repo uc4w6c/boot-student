@@ -20,7 +20,7 @@ public class JackTokenizer {
         var path = Paths.get(readFilePath);
 
         if (!Files.isReadable(path)) {
-            throw new IllegalArgumentException("指定したファイルは読み取り不可です");
+            throw new IllegalArgumentException("File Path: " + path + "指定したファイルは読み取り不可です");
         }
         try {
             this.reader = Files.newBufferedReader(path);
@@ -37,18 +37,39 @@ public class JackTokenizer {
     }
 
     public void advance() {
-        // TODO: コメント除去処理を入れること
-
         if (this.lineReadPoint == 0) {
             try {
-                var tmpLine = Optional.of(this.reader.readLine().trim());
-                // 最終行の時
-                if (tmpLine.isEmpty()) {
-                    this.reader.close();
-                    this.hasMoreTokens = false;
-                    this.token = null;
-                    return;
+                var tmpLine = Optional.ofNullable(this.reader.readLine());
+                boolean isComment = false;
+                while (true) {
+                    // 最終行の時
+                    if (tmpLine.isEmpty()) {
+                        this.reader.close();
+                        this.hasMoreTokens = false;
+                        this.token = null;
+                        return;
+                    }
+                    // 空白行もコメント扱いにする
+                    if (tmpLine.get().trim().isEmpty()) {
+                        isComment = true;
+                    }
+                    if (tmpLine.get().startsWith("//")) {
+                        isComment = true;
+                    }
+                    if (tmpLine.get().startsWith("/*")) {
+                        isComment = true;
+                    }
+                    if (tmpLine.get().endsWith("*/")) {
+                        isComment = false;
+                        tmpLine = Optional.of(this.reader.readLine().trim());
+                    }
+                    if (isComment) {
+                        tmpLine = Optional.of(this.reader.readLine().trim());
+                    } else {
+                        break;
+                    }
                 }
+                System.out.println("tmpLine:" + tmpLine.get());
                 this.line = tmpLine.get();
             } catch (IOException e) {
                 throw new IllegalArgumentException(e);
@@ -57,18 +78,25 @@ public class JackTokenizer {
         // if (line.get().isEmpty()) continue;
         int readCount = 1;
         while (true) {
-            var tmpToken = this.line.substring(this.lineReadPoint, readCount);
+            var tmpToken = this.line.substring(this.lineReadPoint,
+                                                this.lineReadPoint + readCount)
+                                    .trim();
 
             // 読み込み対象文字列が存在しないときはtoken確定
-            if (this.lineReadPoint + readCount <= this.line.length()) {
+            if (this.lineReadPoint + readCount >= this.line.length()) {
                 this.token = tmpToken;
+                this.lineReadPoint = 0;
+                readCount = 0;
                 break;
             }
-            var nextChar = this.line.substring(this.lineReadPoint + readCount, 1);
+            var nextChar = this.line.substring(this.lineReadPoint + readCount,
+                                                this.lineReadPoint + readCount + 1)
+                                    .trim();
 
             // 次の1文字が 空白 or Symbolの場合、それ以前の文字でtoken確定
-            if (nextChar.isEmpty() &&
-                SymbolToken.getInstance().isToken(nextChar)) {
+            if (!tmpToken.isEmpty() &&
+                    (nextChar.isEmpty() ||
+                    SymbolToken.getInstance().isToken(nextChar))) {
                 this.token = tmpToken;
                 break;
             }
