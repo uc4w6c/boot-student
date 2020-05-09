@@ -88,6 +88,7 @@ public class JackTokenizer {
         }
         // if (line.get().isEmpty()) continue;
         int readCount = 1;
+        boolean isStringConst = false;
         while (true) {
             var tmpToken = this.line.substring(this.lineReadPoint,
                                                 this.lineReadPoint + readCount)
@@ -114,9 +115,12 @@ public class JackTokenizer {
 
             // '//' の場合は後続を読み込まないようにする
             if ((tmpToken + nextChar).equals("//")) {
-                this.token = tmpToken;
                 this.lineReadPoint = 0;
                 readCount = 0;
+                this.advance();
+                // this.token = tmpToken;
+                // this.lineReadPoint = 0;
+                // readCount = 0;
                 break;
             }
 
@@ -124,9 +128,19 @@ public class JackTokenizer {
                 this.token = tmpToken;
                 break;
             }
+
+            // 最後が " の時は、コメント終了
+            if (isStringConst && tmpToken.endsWith("\"")) {
+                isStringConst = false;
+            }
+            // " の時は、コメント開始
+            if (tmpToken.equals("\"") && !isStringConst) {
+                isStringConst = true;
+            }
+
             // 次の1文字が 空白 or Symbolの場合、それ以前の文字でtoken確定
             if (!tmpToken.isEmpty() &&
-                    (nextChar.isEmpty() ||
+                    ((nextChar.isEmpty() && !isStringConst) ||
                             SymbolToken.getInstance().isToken(nextChar))) {
                 this.token = tmpToken;
                 break;
@@ -145,7 +159,7 @@ public class JackTokenizer {
         } else if (Pattern.compile("^[0-9]*$").matcher(this.token).find()) {
             return TokenType.INT_CONST;
         // 文字列宣言
-        } else if (Pattern.compile("^\"*\"$").matcher(this.token).find()) {
+        } else if (Pattern.compile("\".*\"").matcher(this.token).find()) {
             return TokenType.STRING_CONST;
         // 変数
         } else {
