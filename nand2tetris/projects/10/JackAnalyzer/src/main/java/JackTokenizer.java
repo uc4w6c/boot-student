@@ -44,6 +44,7 @@ public class JackTokenizer {
                 while (true) {
                     // 最終行の時
                     if (tmpLine.isEmpty()) {
+                        System.out.println("EOF");
                         this.reader.close();
                         this.hasMoreTokens = false;
                         this.token = null;
@@ -51,20 +52,30 @@ public class JackTokenizer {
                     }
                     // 空白行もコメント扱いにする
                     if (tmpLine.get().trim().isEmpty()) {
-                        isComment = true;
+                        tmpLine = Optional.ofNullable(this.reader.readLine());
+                        continue;
                     }
-                    if (tmpLine.get().startsWith("//")) {
-                        isComment = true;
+                    if (tmpLine.get().trim().startsWith("//")) {
+                        tmpLine = Optional.ofNullable(this.reader.readLine());
+                        continue;
                     }
-                    if (tmpLine.get().startsWith("/*")) {
-                        isComment = true;
-                    }
-                    if (tmpLine.get().endsWith("*/")) {
+                    // 該当行内でコメントが完結する場合
+                    if (tmpLine.get().trim().startsWith("/*") &&
+                        tmpLine.get().trim().endsWith("*/")) {
                         isComment = false;
-                        tmpLine = Optional.of(this.reader.readLine().trim());
+                        tmpLine = Optional.ofNullable(this.reader.readLine());
+                        continue;
+                    }
+                    if (tmpLine.get().trim().startsWith("/*")) {
+                        isComment = true;
+                    }
+                    if (tmpLine.get().trim().endsWith("*/")) {
+                        isComment = false;
+                        tmpLine = Optional.ofNullable(this.reader.readLine());
+                        continue;
                     }
                     if (isComment) {
-                        tmpLine = Optional.of(this.reader.readLine().trim());
+                        tmpLine = Optional.ofNullable(this.reader.readLine());
                     } else {
                         break;
                     }
@@ -89,14 +100,34 @@ public class JackTokenizer {
                 readCount = 0;
                 break;
             }
+            // ';' の場合は後続を読み込まないようにする
+            if (tmpToken.equals(";")) {
+                this.token = tmpToken;
+                this.lineReadPoint = 0;
+                readCount = 0;
+                break;
+            }
+
             var nextChar = this.line.substring(this.lineReadPoint + readCount,
                                                 this.lineReadPoint + readCount + 1)
                                     .trim();
 
+            // '//' の場合は後続を読み込まないようにする
+            if ((tmpToken + nextChar).equals("//")) {
+                this.token = tmpToken;
+                this.lineReadPoint = 0;
+                readCount = 0;
+                break;
+            }
+
+            if (SymbolToken.getInstance().isToken(tmpToken)) {
+                this.token = tmpToken;
+                break;
+            }
             // 次の1文字が 空白 or Symbolの場合、それ以前の文字でtoken確定
             if (!tmpToken.isEmpty() &&
                     (nextChar.isEmpty() ||
-                    SymbolToken.getInstance().isToken(nextChar))) {
+                            SymbolToken.getInstance().isToken(nextChar))) {
                 this.token = tmpToken;
                 break;
             }

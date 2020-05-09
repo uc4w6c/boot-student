@@ -22,6 +22,11 @@ $ pwd
 /Users/ysaito/dev/app/workspace/boot-student/nand2tetris/projects/06/pong
 $ java -jar ../assembler/build/libs/assembler.jar PongL.asm 
 
+
+#### TextComparer (10, 11章)
+$ ./tools/TextComparer.sh /Users/ysaito/dev/app/workspace/boot-student/nand2tetris/projects/10/Square/Main.xml /Users/ysaito/dev/app/workspace/boot-student/nand2tetris/projects/10/Square/answer/Main.xml
+
+
 ### かかった時間
     開始日: 2020/3/28
  - chapter1: 8h
@@ -33,4 +38,4 @@ $ java -jar ../assembler/build/libs/assembler.jar PongL.asm
  - chapter7: 10.5h (4/21 22:00) // A でメモリを相対的に参照する方法を理解するのが難しかった
  - chapter8: 5h (4/23 23:30) // StaticTestができていない。SP(RAM[0])の使い方がわかっていなかったから。めんどくさいのでもうやめる
  - chapter9: 1.5h (5/3 22:00) // プロジェクト開始
- - chapter10: 7.5h (5/7 22:00) // 一旦コード作成完了。テストする
+ - chapter10: 9.0h (5/8 23:00) // 一旦コード作成完了。テストする
