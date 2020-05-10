@@ -165,19 +165,22 @@ public class CompilationEngine {
         this.writeElement("keyword", jackTokenizer.getToken());
         jackTokenizer.advance();
         this.writeElement("keyword", jackTokenizer.getToken());
-        jackTokenizer.advance();
-        this.writeElement("identifier", jackTokenizer.getToken());
+        // jackTokenizer.advance();
+        // this.writeElement("identifier", jackTokenizer.getToken());
         jackTokenizer.advance();
         while (true) {
             if (jackTokenizer.getToken().equals(";")) break;
 
             // , は処理対象から除外
-            if (jackTokenizer.getToken().equals(TokenType.SYMBOL) &&
+            if (jackTokenizer.tokenType().equals(TokenType.SYMBOL) &&
                 jackTokenizer.getToken().equals(",")) {
+
+                this.writeElement("symbol", jackTokenizer.getToken());
                 jackTokenizer.advance();
             }
-            jackTokenizer.advance();
+            // jackTokenizer.advance();
             this.writeElement("identifier", jackTokenizer.getToken());
+            jackTokenizer.advance();
         }
 
         this.writeElement("symbol", jackTokenizer.getToken());
@@ -193,7 +196,11 @@ public class CompilationEngine {
         this.writeElement("keyword", jackTokenizer.getToken());
 
         jackTokenizer.advance();
-        this.writeElement("keyword", jackTokenizer.getToken());
+        if (jackTokenizer.tokenType().equals(TokenType.KEYWORD)) {
+            this.writeElement("keyword", jackTokenizer.getToken());
+        } else {
+            this.writeElement("identifier", jackTokenizer.getToken());
+        }
 
         jackTokenizer.advance();
         this.writeElement("identifier", jackTokenizer.getToken());
@@ -263,7 +270,7 @@ public class CompilationEngine {
 
         while (true) {
 
-            if (jackTokenizer.tokenType().equals(TokenType.KEYWORD) ||
+            if (jackTokenizer.tokenType().equals(TokenType.SYMBOL) ||
                 jackTokenizer.getToken().equals(")")) {
 
                 break;
@@ -271,13 +278,14 @@ public class CompilationEngine {
             this.writeElement("keyword", jackTokenizer.getToken());
             jackTokenizer.advance();
             this.writeElement("identifier", jackTokenizer.getToken());
+            jackTokenizer.advance();
 
             if (jackTokenizer.tokenType().equals(TokenType.SYMBOL) &&
                     jackTokenizer.getToken().equals(",")) {
 
+                this.writeElement("symbol", jackTokenizer.getToken());
                 jackTokenizer.advance();
             }
-            jackTokenizer.advance();
         }
         this.writeElementEnd(PARAMETER_TAG_NAME);
 
@@ -559,6 +567,7 @@ public class CompilationEngine {
         final String EXPRESSION_TAG_NAME = "expression";
         this.writeElementStart(EXPRESSION_TAG_NAME);
 
+        boolean isFirst = true;
         while (true) {
             if (jackTokenizer.tokenType().equals(TokenType.SYMBOL)) {
                 // ';' の場合はExpression処理終了
@@ -572,6 +581,10 @@ public class CompilationEngine {
                 }
                 if (jackTokenizer.getToken().equals("(")) {
                     this.compileTerm();
+                }
+                // ',' の場合はExpression処理終了
+                if (jackTokenizer.getToken().equals(",")) {
+                    break;
                 }
                 /*
                 if (jackTokenizer.getToken().equals("(") ||
@@ -596,16 +609,42 @@ public class CompilationEngine {
                 }
                 // isFirst で - の場合だけはtermを呼び出す
                 // this.compileTerm();
+
+                if (jackTokenizer.getToken().equals("-") ||
+                        jackTokenizer.getToken().equals("~")) {
+
+                    /*
+                    this.compileTerm();
+                    isFirst = false;
+                    continue;
+                     */
+                    if (isFirst) {
+                        this.compileTerm();
+                        isFirst = false;
+                        continue;
+                    } else {
+                        this.writeElement("symbol", jackTokenizer.getToken());
+                    }
+                }
+                if (jackTokenizer.getToken().equals("<")) {
+                    this.writeElement("symbol", "&lt;");
+                }
+                if (jackTokenizer.getToken().equals(">")) {
+                    this.writeElement("symbol", "&gt;");
+                }
+                if (jackTokenizer.getToken().equals("&")) {
+                    this.writeElement("symbol", "&amp;");
+                }
                 if (jackTokenizer.getToken().equals("+") ||
-                        jackTokenizer.getToken().equals("-") ||
+                        // jackTokenizer.getToken().equals("-") ||
                         jackTokenizer.getToken().equals("*") ||
                         jackTokenizer.getToken().equals("/") ||
-                        jackTokenizer.getToken().equals("&") ||
+                        // jackTokenizer.getToken().equals("&") ||
                         jackTokenizer.getToken().equals("|") ||
-                        jackTokenizer.getToken().equals("<") ||
-                        jackTokenizer.getToken().equals(">") ||
+                        // jackTokenizer.getToken().equals("<") ||
+                        // jackTokenizer.getToken().equals(">") ||
                         jackTokenizer.getToken().equals("=") ||
-                        jackTokenizer.getToken().equals("~") ||
+                        // jackTokenizer.getToken().equals("~") ||
                         jackTokenizer.getToken().equals(".")) {
 
                     this.writeElement("symbol", jackTokenizer.getToken());
@@ -616,6 +655,10 @@ public class CompilationEngine {
                 }
             }
             if (jackTokenizer.tokenType().equals(TokenType.KEYWORD)) {
+                // TODO: 全てbreakなのかちょっとわからない
+                if (jackTokenizer.getToken().equals("do")) {
+                    break;
+                }
                 this.compileTerm();
                 continue;
             }            // 変数, 文字列, 数値型の場合はterm処理
@@ -624,9 +667,11 @@ public class CompilationEngine {
                     jackTokenizer.tokenType().equals(TokenType.IDENTIFIER)) {
 
                 this.compileTerm();
+                isFirst = false;
                 continue;
             }
 
+            isFirst = false;
             jackTokenizer.advance();
         }
 
@@ -652,9 +697,15 @@ public class CompilationEngine {
                     // jackTokenizer.advance();
                     break;
                 }
+                // ',' の場合はExpression処理終了
+                if (jackTokenizer.getToken().equals(",")) {
+                    break;
+                }
                 if (jackTokenizer.getToken().equals(".")) {
                     this.writeElement("symbol", jackTokenizer.getToken());
                     // jackTokenizer.advance();
+                    jackTokenizer.advance();
+                    continue;
                 }
                 if (jackTokenizer.getToken().equals("(")) {
 
@@ -669,7 +720,7 @@ public class CompilationEngine {
                     }
 
                     this.writeElement("symbol", jackTokenizer.getToken());
-                    jackTokenizer.advance();
+                    // jackTokenizer.advance();
                     continue;
                 }
                 if (jackTokenizer.getToken().equals("[")) {
@@ -687,8 +738,17 @@ public class CompilationEngine {
                 // isFirst で - の場合だけは継続する
                 // this.writeElement("symbol", jackTokenizer.getToken());
                 // jackTokenizer.advance();
+                if (jackTokenizer.getToken().equals("-") ||
+                        jackTokenizer.getToken().equals("~")) {
+
+                    this.writeElement("symbol", jackTokenizer.getToken());
+                    jackTokenizer.advance();
+                    this.compileTerm();
+                    continue;
+                }
+
                 if (jackTokenizer.getToken().equals("+") ||
-                        jackTokenizer.getToken().equals("-") ||
+                        // jackTokenizer.getToken().equals("-") ||
                         jackTokenizer.getToken().equals("*") ||
                         jackTokenizer.getToken().equals("/") ||
                         jackTokenizer.getToken().equals("&") ||
@@ -696,7 +756,7 @@ public class CompilationEngine {
                         jackTokenizer.getToken().equals("<") ||
                         jackTokenizer.getToken().equals(">") ||
                         jackTokenizer.getToken().equals("=") ||
-                        jackTokenizer.getToken().equals("~") ||
+                        // jackTokenizer.getToken().equals("~") ||
                         jackTokenizer.getToken().equals(";")) {
 
                     break;
@@ -720,9 +780,14 @@ public class CompilationEngine {
             if (jackTokenizer.tokenType().equals(TokenType.IDENTIFIER)) {
                 this.writeElement("identifier", jackTokenizer.getToken());
                 isIdentifier = true;
+                // 追加
+                jackTokenizer.advance();
+                continue;
             }
 
             jackTokenizer.advance();
+            // 一旦仮で
+            break;
         }
 
         this.writeElementEnd(TERM_TAG_NAME);
@@ -735,10 +800,17 @@ public class CompilationEngine {
         while (true) {
             // ',' の場合はExpressionList継続
             if (jackTokenizer.tokenType().equals(TokenType.SYMBOL)) {
-                if (!jackTokenizer.getToken().equals(",")) {
+                if (jackTokenizer.getToken().equals(",")) {
+                    this.writeElement("symbol", jackTokenizer.getToken());
+                    jackTokenizer.advance();
+                }
+                // if (!jackTokenizer.getToken().equals(",")) {
+                if (jackTokenizer.getToken().equals(")")) {
+
                     break;
                 }
-                jackTokenizer.advance();
+                // this.writeElement("symbol", jackTokenizer.getToken());
+                // jackTokenizer.advance();
             }
             this.compileExpression();
         }
@@ -756,7 +828,7 @@ public class CompilationEngine {
             Files.write(path,
                         outputCode,
                         Charset.forName("UTF-8"),
-                        StandardOpenOption.WRITE);
+                        StandardOpenOption.CREATE);
 
         } catch (IOException e) {
             e.printStackTrace();

@@ -38,4 +38,4 @@ $ ./tools/TextComparer.sh /Users/ysaito/dev/app/workspace/boot-student/nand2tetr
  - chapter7: 10.5h (4/21 22:00) // A でメモリを相対的に参照する方法を理解するのが難しかった
  - chapter8: 5h (4/23 23:30) // StaticTestができていない。SP(RAM[0])の使い方がわかっていなかったから。めんどくさいのでもうやめる
  - chapter9: 1.5h (5/3 22:00) // プロジェクト開始
- - chapter10: 10.0h (5/8 23:00) // 一旦コード作成完了。テストする ()内で- 時のsymbol or termで失敗している
+ - chapter10: 12.0h (5/9 12:30) // 完成していない。このままやっても無駄だからやめる
