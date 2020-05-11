@@ -39,3 +39,4 @@ $ ./tools/TextComparer.sh /Users/ysaito/dev/app/workspace/boot-student/nand2tetr
  - chapter8: 5h (4/23 23:30) // StaticTestができていない。SP(RAM[0])の使い方がわかっていなかったから。めんどくさいのでもうやめる
  - chapter9: 1.5h (5/3 22:00) // プロジェクト開始
  - chapter10: 12.0h (5/9 12:30) // 完成していない。このままやっても無駄だからやめる
+ - chapter11: 0.5h (5/11 22:00) // とりあえず読んで終わり
