@@ -41,6 +41,28 @@ public class Interpreter {
       return integer.value();
     } else if (expression instanceof Ast.Identifier identifier) {
       return environment.get(identifier.name());
+    } else if (expression instanceof Ast.FunctionCall functionCall) {
+      var definition = functionEnvironment.get(functionCall.name());
+      if (definition == null) {
+        throw new RuntimeException("Function " + functionCall.name() + " is not found");
+      }
+
+      var actualParams = functionCall.args();
+      var formalParams = definition.args();
+      var body = definition.body();
+      var values = actualParams.stream().map(a -> interpret(a)).toList();
+      var backup = variableEnvironment;
+      variableEnvironment = newEnvironment(Optional.of(variableEnvironment));
+      int i = 0;
+      for (var formalParamName : formalParams) {
+        variableEnvironment.bindings().put(
+            formalParamName, values.get(i)
+        );
+        i++;
+      }
+      var result = interpret(body);
+      variableEnvironment = backup;
+      return result;
     } else if (expression instanceof Ast.Assignment assignment) {
       int value = interpret(assignment.expression());
       environment.put(assignment.name(), value);
@@ -86,8 +108,11 @@ public class Interpreter {
     for (var topLevel : topLevels) {
       if (topLevel instanceof Ast.FunctionDefinition functionDefinition) {
         functionEnvironment.put(functionDefinition.name(), functionDefinition);
-      } else {
-        // グローバル変数の定義の処理(後述)
+      } else if(topLevel instanceof Ast.GlobalVariableDefinition globalVariableDefinition) {
+        variableEnvironment.bindings().put(
+          globalVariableDefinition.name(),
+          interpret(globalVariableDefinition.expression())
+        );
       }
     }
     var mainFunction = functionEnvironment.get("main");

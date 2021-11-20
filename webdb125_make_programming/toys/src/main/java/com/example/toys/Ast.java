@@ -84,7 +84,7 @@ public class Ast {
       BinaryExpression, Assignment, 
       IntegerLiteral, Identifier,
       BlockExpression, WhileExpression,
-      IfExpression {}
+      IfExpression, FunctionCall {}
 
   public static final record BinaryExpression(
       Operator operator, Expression lhs, Expression rhs
@@ -114,6 +114,10 @@ public class Ast {
       Expression condition,
       Expression thenClause,
       Optional<Expression> elseClause
+  ) implements Expression {}
+
+  public static final record FunctionCall(
+      String name, List<Expression> args
   ) implements Expression {}
 
   /** TopLevel */
