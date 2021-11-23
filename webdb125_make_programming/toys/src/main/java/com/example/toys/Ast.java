@@ -36,8 +36,28 @@ public class Ast {
     return new IntegerLiteral(value);
   }
 
-  public static Identifier identifier(String name) {
+  public static BinaryExpression lessThan(Expression lhs, Expression rhs) {
+    return new BinaryExpression(Operator.LESS_THAN, lhs, rhs);
+  }
+  public static BinaryExpression lessOrEqual(Expression lhs, Expression rhs) {
+    return new BinaryExpression(Operator.LESS_OR_EQUAL, lhs, rhs);
+  }
+  public static BinaryExpression greaterThan(Expression lhs, Expression rhs) {
+    return new BinaryExpression(Operator.GREATER_THAN, lhs, rhs);
+  }
+  public static BinaryExpression greaterOrEqual(Expression lhs, Expression rhs) {
+    return new BinaryExpression(Operator.GREATER_OR_EQUAL, lhs, rhs);
+  }
+  public static BinaryExpression equalEqual(Expression lhs, Expression rhs) {
+    return new BinaryExpression(Operator.EQUAL_EQUAL, lhs, rhs);
+  }
+
+  public static Identifier symbol(String name) {
     return new Identifier(name);
+  }
+
+  public static FunctionCall call(String name, Expression... args) {
+    return new FunctionCall(name, Arrays.asList(args));
   }
 
   public static Assignment assignment(
@@ -77,6 +97,10 @@ public class Ast {
       Expression thenClause
   ) {
     return If(condition, thenClause, Optional.empty());
+  }
+
+  public static FunctionDefinition DefineFunction(String name, List<String> args, Expression body) {
+    return new FunctionDefinition(name, args, body);
   }
 
   /** Expression */
@@ -136,10 +160,10 @@ public class Ast {
 
   /** Environment */
   public static final record Environment(
-      Map<String, Integer> bindings,
+      Map<String, Values.Value> bindings,
       Optional<Environment> next
   ) {
-    public Optional<Map<String, Integer>> findBinding(String name) {
+    public Optional<Map<String, Values.Value>> findBinding(String name) {
       if (bindings.get(name) != null) {
         return Optional.of(bindings);
       }

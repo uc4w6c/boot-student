@@ -5,6 +5,9 @@ import java.util.Map;
 import java.util.Optional;
 
 import com.example.toys.Ast.Environment;
+import com.example.toys.Values.Value;
+
+import static com.example.toys.Values.wrap;
 
 public class Interpreter {
   private Ast.Environment variableEnvironment;
@@ -21,26 +24,27 @@ public class Interpreter {
     return new Ast.Environment(new HashMap<>(), next);
   }
 
-  public int interpret(Ast.Expression expression) {
+  public Value interpret(Ast.Expression expression) {
     if (expression instanceof Ast.BinaryExpression binaryExpression) {
-      var lhs = interpret(binaryExpression.lhs());
-      var rhs = interpret(binaryExpression.rhs());
+      var lhs = interpret(binaryExpression.lhs()).asInt().value();
+      var rhs = interpret(binaryExpression.rhs()).asInt().value();
       return switch(binaryExpression.operator()) {
-        case ADD ->  lhs + rhs;
-        case SUBTRACT -> lhs - rhs;
-        case MULTIPLY -> lhs * rhs;
-        case DIVIDE -> lhs / rhs;
-        case LESS_THAN -> lhs < rhs ? 1 : 0;
-        case LESS_OR_EQUAL -> lhs <= rhs ? 1 : 0;
-        case GREATER_THAN -> lhs > rhs ? 1 : 0;
-        case GREATER_OR_EQUAL -> lhs >= rhs ? 1 : 0;
-        case EQUAL_EQUAL -> lhs == rhs ? 1 : 0;
-        case NOT_EQUAL -> lhs != rhs ? 1 : 0;
+        case ADD -> wrap(lhs + rhs);
+        case SUBTRACT -> wrap(lhs - rhs);
+        case MULTIPLY -> wrap(lhs * rhs);
+        case DIVIDE -> wrap(lhs / rhs);
+        case LESS_THAN -> wrap(lhs < rhs);
+        case LESS_OR_EQUAL -> wrap(lhs <= rhs);
+        case GREATER_THAN -> wrap(lhs > rhs);
+        case GREATER_OR_EQUAL -> wrap(lhs >= rhs);
+        case EQUAL_EQUAL -> wrap(lhs == rhs);
+        case NOT_EQUAL -> wrap(lhs != rhs);
       };
     } else if (expression instanceof Ast.IntegerLiteral integer) {
-      return integer.value();
+      return wrap(integer.value());
     } else if (expression instanceof Ast.Identifier identifier) {
-      return environment.get(identifier.name());
+      var bindingsOpt = variableEnvironment.findBinding(identifier.name());
+      return bindingsOpt.get().get(identifier.name());
     } else if (expression instanceof Ast.FunctionCall functionCall) {
       var definition = functionEnvironment.get(functionCall.name());
       if (definition == null) {
@@ -64,37 +68,35 @@ public class Interpreter {
       variableEnvironment = backup;
       return result;
     } else if (expression instanceof Ast.Assignment assignment) {
-      int value = interpret(assignment.expression());
-      environment.put(assignment.name(), value);
+      var bindingsOpt= variableEnvironment.findBinding(assignment.name());
+      Value value = interpret(assignment.expression());
+      if(bindingsOpt.isPresent()) {
+        bindingsOpt.get().put(assignment.name(), value);
+      } else {
+        variableEnvironment.bindings().put(assignment.name(), value);
+      }
       return value;
     } else if (expression instanceof Ast.IfExpression ifExpression) {
-      int condition = interpret(
-          ifExpression.condition()
-      );
-      if (condition != 0) {
+      boolean satisfied = interpret(ifExpression.condition()).asBool().value();
+      if (satisfied) {
         return interpret(ifExpression.thenClause());
-      }
-      else {
+      } else {
         var elseClauseOpt = ifExpression.elseClause();
-        return elseClauseOpt.map(
-            this::interpret
-        ).orElse(1);
+        return elseClauseOpt.map(this::interpret).orElse(null);
       }
     } else if (expression instanceof Ast.WhileExpression whileExpression) {
       while (true) {
-        int condition = interpret(
-            whileExpression.condition()
-        );
-        if (condition != 0) {
+        boolean satisfied = interpret(whileExpression.condition()).asBool().value();
+        if (satisfied) {
           interpret(whileExpression.body());
         } else {
           break;
         }
       }
-      return 1;
+      return wrap(true);
     } else if (expression instanceof Ast.BlockExpression blockExpression) {
-      int value = 0;
-      for (var e : blockExpression.elements()) {
+      Value value = null;
+      for(var e : blockExpression.elements()) {
         value = interpret(e);
       }
       return value;
@@ -103,7 +105,7 @@ public class Interpreter {
     }
   }
 
-  public int callMain(Ast.Program program) {
+  public Value callMain(Ast.Program program) {
     var topLevels = program.definitions();
     for (var topLevel : topLevels) {
       if (topLevel instanceof Ast.FunctionDefinition functionDefinition) {
